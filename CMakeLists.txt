@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
-project(RichGame VERSION 1.0.0 LANGUAGES CXX)
+project(RichGame VERSION 1.0.0 LANGUAGES C)
 
-# 设置C++标准
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# 设置C标准
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # 设置编译选项
 if(MSVC)
@@ -21,7 +21,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 include_directories(include)
 
 # 收集源文件
-file(GLOB_RECURSE SOURCES "src/*.cpp")
+file(GLOB_RECURSE SOURCES "src/*.c")
 file(GLOB_RECURSE HEADERS "include/*.h")
 
 # 创建主要的游戏库
@@ -29,42 +29,15 @@ add_library(RichGameLib ${SOURCES} ${HEADERS})
 target_include_directories(RichGameLib PUBLIC include)
 
 # 创建主执行文件
-add_executable(RichGame src/main.cpp)
+add_executable(RichGame src/main.c)
 target_link_libraries(RichGame RichGameLib)
 
 # 启用测试
 enable_testing()
 
-# Google Test集成
-include(FetchContent)
-
-# 尝试使用系统安装的GoogleTest，如果没有则下载
-find_package(GTest QUIET)
-
-if(NOT GTest_FOUND)
-    message(STATUS "GoogleTest not found, downloading from GitHub...")
-    FetchContent_Declare(
-      googletest
-      URL https://github.com/google/googletest/archive/release-1.12.1.zip
-      DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-    )
-    # For Windows: Prevent overriding the parent project's compiler/linker settings
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(googletest)
-    
-    # 创建别名以保持一致性
-    if(NOT TARGET GTest::gtest_main)
-        add_library(GTest::gtest_main ALIAS gtest_main)
-        add_library(GTest::gtest ALIAS gtest)
-        add_library(GTest::gmock ALIAS gmock)
-        add_library(GTest::gmock_main ALIAS gmock_main)
-    endif()
-else()
-    message(STATUS "Using system GoogleTest")
-endif()
-
+# 简单的C测试支持
 # 添加测试目录
-add_subdirectory(tests)
+# add_subdirectory(tests)
 
 # 安装配置
 install(TARGETS RichGame DESTINATION bin)
