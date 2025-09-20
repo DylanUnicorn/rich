@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <Tool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,6 +29,12 @@ typedef struct {
     int money;
     int points;
     int position;
+    bool in_hospital;     //标志是否在医院
+    bool in_prison;       //标志是否在监狱
+    bool active;          //标志是否破产 
+    bool god;             //标志是否财神附体
+    int house[100];       //当前拥有的房产编号
+    Tool tool;            //当前拥有的道具
 } Player;
 
 /**
