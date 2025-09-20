@@ -416,3 +416,34 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# CMake specific
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# C++ specific
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+
+# Test coverage
+*.gcno
+*.gcda
+*.gcov
+coverage.info
+coverage/
+
+# Package files
+*.zip
+*.tar.gz
+*.deb
+*.rpm
