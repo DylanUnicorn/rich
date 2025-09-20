@@ -39,6 +39,15 @@ enable_testing()
 # 添加测试目录
 # add_subdirectory(tests)
 
+# 在Linux/Unix上，将 Bash 测试脚本接入到 CTest
+if(UNIX)
+    add_test(
+        NAME run_bash_tests
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMAND bash tests/run_tests.sh
+    )
+endif()
+
 # 安装配置
 install(TARGETS RichGame DESTINATION bin)
 install(TARGETS RichGameLib DESTINATION lib)

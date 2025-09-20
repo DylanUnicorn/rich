@@ -1,0 +1,56 @@
+# 一个windows下面的可能测试用例
+
+文件 cmdlist_case1 大致内容：
+
+preset user [AQSJ]        // reset all map in this instruction, must be the first preset instruction
+preset map [n] [A|Q|S|J] [level]
+preset fund [A|Q|S|J] [number]
+preset credit [A|Q|S|J] [number]
+preset gift [A|Q|S|J] [bomb|barrier|robot|god] [n]
+preset bomb [n]
+preset barrier [n]
+preset userloc [A|Q|S|J] [n [m]]        // m represent how many days the user should stay
+preset nextuser [A|Q|S|J]
+// blocks for user interactive instructions
+step 5                // indicate the nextuser go forward 5 steps
+...                // give the answers to the question (eg. buy block/choose gift) 
+// instructions end
+dump                // dump internal info to dump.txt
+
+====================================================================
+
+dump命令之后，生成的dump.txt文件示例：
+
+user AQS                // users info first, AQSJ in order
+map[0] A 1                // map info, index in order, skip all the ownerless block
+map[1] Q 2
+map[4] S 1
+fund A 1000                // fund info, AQSJ in order
+fund Q 3000
+fund S 1500
+credit A 30                // credit info, AQSJ in order
+credit Q 50
+gift A bomb 1                // gift info, AQSJ in order, bomb barrier robot god in order per user
+gift A barrier 2
+gift Q robot 1
+bomb 23                        // bomb/barrier location info, bomb barrier in order
+bomb 35
+barrier 45
+userloc A 25                // user location, AQSJ in order
+userloc Q 14 2                // loc 14 is hospital
+userloc S 32
+nextuser A                // nextuser who will play
+
+=========================================================
+测试用例使用示例
+// rich is the game execute file name
+// cmdlist_case1 is a txt file contains 3 parts of cmds: 
+//   1. preset cmd; 
+//   2. running part(preset steps); 
+//   3. dump cmd
+
+// checkresult.txt file contains the correct data if rich program runs correctly
+// run the following cmd to get the pass(0)/failed(1) result into checkresult.txt file
+rich < cmdlist_case1 ; fc dump.txt presetresult_case1.txt ; echo case1 result 1 %errorlevel% >> checkresult.txt
+
+// we can combine several test case cmd in one batch file, then the checkresult.txt file can collect all the test results
