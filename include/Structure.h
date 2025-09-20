@@ -1,6 +1,7 @@
 #ifndef STRUCTURE_H
 #define STRUCTURE_H
 
+#icnlude <stdio.h>
 #include <Tool.h>
 #include <Player.h>
 

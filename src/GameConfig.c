@@ -43,7 +43,7 @@ void gameConfig_promptForInitialMoney(GameConfig* config) {
         }
         
         /* Try to parse as integer */
-        if (sscanf_s(line, "%d", &money) == 1) {
+        if (sscanf(line, "%d", &money) == 1) {
             if (gameConfig_setInitialMoney(config, money)) {
                 break;
             } else {
