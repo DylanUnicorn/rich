@@ -88,9 +88,14 @@ format_code() {
         return
     fi
     
-    find "$PROJECT_DIR/src" "$PROJECT_DIR/include" "$PROJECT_DIR/tests" \
-         -name "*.cpp" -o -name "*.h" | \
-         xargs clang-format -i
+    # 优先使用 git 仅格式化被跟踪的源文件；否则回退到 find
+    if command -v git &> /dev/null && git -C "$PROJECT_DIR" rev-parse --is-inside-work-tree &> /dev/null; then
+        git -C "$PROJECT_DIR" ls-files -z '*.c' '*.h' | xargs -0 -r clang-format -i || true
+    else
+        find "$PROJECT_DIR/src" "$PROJECT_DIR/include" "$PROJECT_DIR/tests" \
+             -type f \( -name "*.c" -o -name "*.h" \) -print0 | \
+             xargs -0 -r clang-format -i || true
+    fi
     
     log_success "代码格式化完成"
 }
@@ -104,9 +109,15 @@ check_format() {
         return
     fi
     
-    local format_issues=$(find "$PROJECT_DIR/src" "$PROJECT_DIR/include" "$PROJECT_DIR/tests" \
-                          -name "*.cpp" -o -name "*.h" | \
-                          xargs clang-format --dry-run --Werror 2>&1 || true)
+    local format_issues=""
+    if command -v git &> /dev/null && git -C "$PROJECT_DIR" rev-parse --is-inside-work-tree &> /dev/null; then
+        format_issues=$(git -C "$PROJECT_DIR" ls-files -z '*.c' '*.h' | \
+                        xargs -0 -r clang-format --dry-run --Werror 2>&1 || true)
+    else
+        format_issues=$(find "$PROJECT_DIR/src" "$PROJECT_DIR/include" "$PROJECT_DIR/tests" \
+                        -type f \( -name "*.c" -o -name "*.h" \) -print0 | \
+                        xargs -0 -r clang-format --dry-run --Werror 2>&1 || true)
+    fi
     
     if [ -n "$format_issues" ]; then
         log_error "代码格式不符合规范:"
