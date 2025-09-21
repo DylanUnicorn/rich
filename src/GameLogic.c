@@ -1,0 +1,44 @@
+#include "GameLogic.h"
+#include "Player.h"
+#include "Structure.h"
+#include "prophouse.h"
+#include "gifthouse.h"
+void game_handle_jail(Player* player) {
+    if (player == NULL) return;
+    player->in_prison = true;
+    player->prison_days = 2; // Example: stay for 2 turns
+}
+
+
+void game_handle_tool_shop(Player* player) {
+    if (player == NULL) return;
+    // Example: allow player to buy a tool if they have enough money
+    player_getintoPropHouse(player);
+}
+
+void game_handle_gift_house(Player* player) {
+    if (player == NULL) return;
+    // Example: give player a random gift (money, points, etc.)
+    player_getintoGiftHouse(player);
+}
+
+void game_handle_cell_event(Player* player, Structure* cell, PlayerManager* player_manager){
+    if (cell == NULL || player == NULL || player_manager == NULL) return;
+
+    switch (cell->type) {
+        case 'H': // Hospital
+            break;
+        case 'P': // Prison
+            game_handle_jail(player);
+            break;
+        case 'G': // Gift House
+            game_handle_gift_house(player);
+            break;
+        case 'T': // Tool Shop
+            game_handle_tool_shop(player);
+            break;
+        default:
+            // Handle other cell types if necessary
+            break;
+    }
+}

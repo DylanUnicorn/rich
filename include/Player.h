@@ -34,7 +34,7 @@ typedef struct {
     int hospital_days;    //住院天数
     int prison_days;      //服刑天数
     int points_multiplier;//点数倍数（1或2）
-    int multiplier_days;  //倍数剩余天数
+    int god_bless_days;  //倍数剩余天数
     bool active;          //标志是否破产 
     bool god;             //标志是否财神附体
     int house[100];       //当前拥有的房产编号
