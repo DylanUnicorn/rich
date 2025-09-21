@@ -111,6 +111,9 @@ void run_interactive_game() {
             } else {
                 printf("未知命令，请输入 help 查看帮助。\n");
             }
+
+            playerManager_nextPlayer(&playerManager);
+            
         }
 
     } else {
@@ -142,19 +145,3 @@ int main(int argc, char* argv[]) {
     
     return 0;
 }
-
-// int main() {
-//     GameConfig config;
-//     PlayerManager playerManager;
-//     Game_Init(&config,&playerManager);
-//     while (1)
-//     {
-//         for (int i = 0;i<playerManager.playerCount;i++)
-//         {
-//             printf("\033[2J\033[H");
-//             printf("%s",player_getName(playerManager.players[i].character));
-//             getchar();
-//         }
-        
-//     }
-// }
