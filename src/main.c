@@ -11,6 +11,8 @@
 #include "GameConfig.h"
 #include "Player.h"
 #include "ui.h"
+#include "roll.h"
+#include "prophouse.h"
 
 void run_test_helloworld() {
     printf("Hello World!\n");
@@ -96,6 +98,7 @@ void run_interactive_game() {
                 printf("资金：%d，点数：%d，位置：%d\n", 
                     currentPlayer->money, currentPlayer->points, currentPlayer->position);
             } else if (strcmp(cmd, "roll") == 0) {
+                Player_use_roll_dice( currentPlayer);
                 // 掷骰子逻辑
                 printf("（此处掷骰子...）\n");
                 // playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
