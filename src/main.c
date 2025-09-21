@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include "GameConfig.h"
 #include "Player.h"
-
+#include "prophouse.h"
+#include "roll.h"
 int main() {
     printf("=== Rich Game ===\n");
     
@@ -35,6 +36,8 @@ int main() {
         Player* currentPlayer = playerManager_getCurrentPlayer(&playerManager);
         if (currentPlayer != NULL) {
             printf("\nCurrent turn: %s\n", player_getName(currentPlayer->character));
+            player_getintoPropHouse(currentPlayer);
+            Player_use_roll_dice(currentPlayer);
         }
     } else {
         printf("Game initialization failed!\n");
