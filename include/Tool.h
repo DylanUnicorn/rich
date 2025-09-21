@@ -8,4 +8,11 @@ typedef struct {
     int total; //道具总量
 } Tool;
 
+typedef enum {
+    TOOL_NONE = 0,
+    TOOL_BLOCK,
+    TOOL_BOMB,
+    TOOL_ROBOT
+} ToolType;
+
 #endif
