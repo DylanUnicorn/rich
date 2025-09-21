@@ -15,8 +15,8 @@
 #include "prophouse.h"
 #include "map.h"
 #include "land.h"
-#include "windows.h"
-
+#include "GameLogic.h"
+#include "gifthouse.h"
 void run_test_helloworld() {
     printf("Hello World!\n");
 }
@@ -133,14 +133,16 @@ void run_interactive_game() {
                     }
                     else {
                         printf("错误指令，输入help寻求帮助。\n");
-                }
+                    }
+                } 
+                else {
+                    game_handle_cell_event(currentPlayer, &map[i], &playerManager);
+                } 
                 playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-            } 
-            else {
+            }else {
                 printf("未知命令，请输入 help 查看帮助。\n");
             }
         }
-    }
     } 
     else {
         printf("Game initialization failed!\n");
@@ -149,7 +151,6 @@ void run_interactive_game() {
 
 int main(int argc, char* argv[]) {
     /* Check command line arguments */
-    SetConsoleOutputCP(65001);
     if (argc > 1) {
         if (strcmp(argv[1], "testhelloworld") == 0) {
             run_test_helloworld();
