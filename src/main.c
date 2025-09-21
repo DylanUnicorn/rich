@@ -106,13 +106,14 @@ void run_interactive_game() {
                 Player_use_roll_dice( currentPlayer);
                 // 掷骰子逻辑
                 printf("（此处掷骰子...）\n");
+                playerManager_nextPlayer(&playerManager);
+
                 // playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
             } else {
                 printf("未知命令，请输入 help 查看帮助。\n");
             }
             
-            playerManager_nextPlayer(&playerManager);
-
+            
         }
 
     } else {
