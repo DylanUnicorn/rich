@@ -42,8 +42,12 @@ void gameConfig_promptForInitialMoney(GameConfig* config) {
             break;
         }
         
-        /* Try to parse as integer */
-        if (sscanf_s(line, "%d", &money) == 1) {
+    /* Try to parse as integer (portable: sscanf on non-MSVC, sscanf_s on MSVC) */
+    #ifdef _MSC_VER
+    if (sscanf_s(line, "%d", &money) == 1) {
+    #else
+    if (sscanf(line, "%d", &money) == 1) {
+    #endif
             if (gameConfig_setInitialMoney(config, money)) {
                 break;
             } else {
