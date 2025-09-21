@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
+
 #ifdef _WIN32
 #include <io.h>
 #define isatty _isatty
@@ -17,6 +19,8 @@
 #include "land.h"
 #include "GameLogic.h"
 #include "gifthouse.h"
+#define MAX_INPUT 100
+
 void run_test_helloworld() {
     printf("Hello World!\n");
 }
@@ -43,6 +47,7 @@ void run_command_mode() {
 }
 
 void run_interactive_game() {
+    char input[MAX_INPUT];
     printf("=== Rich Game ===\n");
     Structure map[HEIGHT * WIDTH];
     init_map(map);
@@ -89,16 +94,66 @@ void run_interactive_game() {
             ui_display_prompt(currentPlayer);
 
             // 读取并处理命令
-            char cmd[128];
+            /*char cmd[128];
             if (fgets(cmd, sizeof(cmd), stdin) == NULL) break;
-            ui_clear_screen();
+            
             cmd[strcspn(cmd, "\n")] = 0;
 
-            // 这里处理命令，比如 roll, query, help, quit 等
+            // 这里处理命令，比如 roll, query, help, quit 等*/
+            // 读取整行输入
+        if (fgets(input, MAX_INPUT, stdin) == NULL) {
+            break;
+        }
+        ui_clear_screen();
+        // 移除换行符
+        input[strcspn(input, "\n")] = 0;
+
+        // 分割输入
+        char *cmd = strtok(input, " ");
+        char *param = strtok(NULL, " ");
+
+            if (cmd == NULL) {
+                continue; // 空输入
+            }
+            
             if (strcmp(cmd, "quit") == 0) {
                 printf("游戏结束。\n");
                 break;
             } 
+            else if (strcmp(cmd, "step") == 0) {
+                if (param != NULL) {
+                    int steps = atoi(param);
+                    currentPlayer->position = (currentPlayer->position + steps) % 70; // 假设地图有70个位置
+                    printf("你移动到了位置 %d\n", currentPlayer->position);
+                int i = find_place(map, currentPlayer);
+                if(map[i].type == '0'){
+                    printf("此处为空地，可以购买。\n");
+                    printf("是否购买此地？(y/n): ");
+                    char choice;
+                    //scanf(" %c", &choice);
+                    if (scanf(" %c", &choice) != 1) {
+                        // 处理输入错误
+                        printf("输入错误，请输入 y 或 n。\n");
+                        continue;
+                    }
+                    while (getchar() != '\n'); // 清除输入缓冲区
+                    if (choice == 'y' || choice == 'Y') {
+                        buy_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
+                    } 
+                    else if(choice == 'n' || choice == 'N') {
+                        printf("放弃购买此地。\n");
+                    }
+                    else {
+                        printf("错误指令，输入help寻求帮助。\n");
+                    }
+                } 
+                else {
+                    game_handle_cell_event(currentPlayer, &map[i], &playerManager);
+                }
+                } else {
+                printf("错误: step需要指定步数\n");
+                }
+            }
             else if (strcmp(cmd, "help") == 0) {
                 ui_display_help();
             } 
@@ -106,7 +161,45 @@ void run_interactive_game() {
                 // 显示当前玩家资产
                 printf("资金：%d，点数：%d，位置：%d\n", 
                     currentPlayer->money, currentPlayer->points, currentPlayer->position);
-            } 
+            }
+            else if(strcmp(cmd, "step") == 0) {
+                printf("\n请输入你要前进的步数:\n");
+                int step;
+                if (scanf("%d", &step) != 1) {
+                    // 处理输入错误
+                    printf("输入错误，请输入一个整数。\n");
+                    while (getchar() != '\n'); // 清除输入缓冲区
+                    continue;
+            }
+                while (getchar() != '\n'); // 清除输入缓冲区
+                currentPlayer->position = (currentPlayer->position + step) % 70; // 假设地图有70个位置
+                printf("你移动到了位置 %d\n", currentPlayer->position);
+                int i = find_place(map, currentPlayer);
+                if(map[i].type == '0'){
+                    printf("此处为空地，可以购买。\n");
+                    printf("是否购买此地？(y/n): ");
+                    char choice;
+                    //scanf(" %c", &choice);
+                    if (scanf(" %c", &choice) != 1) {
+                        // 处理输入错误
+                        printf("输入错误，请输入 y 或 n。\n");
+                        continue;
+                    }
+                    while (getchar() != '\n'); // 清除输入缓冲区
+                    if (choice == 'y' || choice == 'Y') {
+                        buy_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
+                    } 
+                    else if(choice == 'n' || choice == 'N') {
+                        printf("放弃购买此地。\n");
+                    }
+                    else {
+                        printf("错误指令，输入help寻求帮助。\n");
+                    }
+                } 
+                else {
+                    game_handle_cell_event(currentPlayer, &map[i], &playerManager);
+                } 
+            }
             else if (strcmp(cmd, "roll") == 0) {
                 Player_use_roll_dice( currentPlayer);
                 // 掷骰子逻辑
