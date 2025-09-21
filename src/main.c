@@ -14,7 +14,8 @@
 #include "roll.h"
 #include "prophouse.h"
 #include "map.h"
-#include"TollFee.h"
+#include "land.h"
+
 
 void run_test_helloworld() {
     printf("Hello World!\n");
@@ -79,6 +80,7 @@ void run_interactive_game() {
 
          // 游戏主循环
         while (1) {
+            
             print_map(map);
             Player* currentPlayer = playerManager_getCurrentPlayer(&playerManager);
             if (currentPlayer == NULL) break;
@@ -96,27 +98,51 @@ void run_interactive_game() {
             if (strcmp(cmd, "quit") == 0) {
                 printf("游戏结束。\n");
                 break;
-            } else if (strcmp(cmd, "help") == 0) {
+            } 
+            else if (strcmp(cmd, "help") == 0) {
                 ui_display_help();
-            } else if (strcmp(cmd, "query") == 0) {
+            } 
+            else if (strcmp(cmd, "query") == 0) {
                 // 显示当前玩家资产
                 printf("资金：%d，点数：%d，位置：%d\n", 
                     currentPlayer->money, currentPlayer->points, currentPlayer->position);
-            } else if (strcmp(cmd, "roll") == 0) {
+            } 
+            else if (strcmp(cmd, "roll") == 0) {
                 Player_use_roll_dice( currentPlayer);
                 // 掷骰子逻辑
                 printf("（此处掷骰子...）\n");
-                playerManager_nextPlayer(&playerManager);
+                 
+                int i = find_place(map, currentPlayer);
 
-                // playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-            } else {
+                if(map[i].type == '0'){
+                    printf("此处为空地，可以购买。\n");
+                    printf("是否购买此地？(y/n): ");
+                    char choice;
+                    //scanf(" %c", &choice);
+                    if (scanf(" %c", &choice) != 1) {
+                        // 处理输入错误
+                        printf("输入错误，请输入 y 或 n。\n");
+                        continue;
+                    }
+                    while (getchar() != '\n'); // 清除输入缓冲区
+                    if (choice == 'y' || choice == 'Y') {
+                        buy_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
+                    } 
+                    else if(choice == 'n' || choice == 'N') {
+                        printf("放弃购买此地。\n");
+                    }
+                    else {
+                        printf("错误指令，输入help寻求帮助。\n");
+                }
+                playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+            } 
+            else {
                 printf("未知命令，请输入 help 查看帮助。\n");
             }
-            
-            
         }
-
-    } else {
+    }
+    } 
+    else {
         printf("Game initialization failed!\n");
     }
 }
@@ -145,3 +171,19 @@ int main(int argc, char* argv[]) {
     
     return 0;
 }
+
+// int main() {
+//     GameConfig config;
+//     PlayerManager playerManager;
+//     Game_Init(&config,&playerManager);
+//     while (1)
+//     {
+//         for (int i = 0;i<playerManager.playerCount;i++)
+//         {
+//             printf("\033[2J\033[H");
+//             printf("%s",player_getName(playerManager.players[i].character));
+//             getchar();
+//         }
+        
+//     }
+// }
