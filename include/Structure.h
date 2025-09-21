@@ -6,7 +6,7 @@
 
 typedef struct {
     int id; //地块编号
-    Player owner;//主人信息
+    Player *owner;//主人信息
     char type;//Hospital/Prison/Magic/Gold...
     int level;//当前地产等级
     int money;//地产基础价格
