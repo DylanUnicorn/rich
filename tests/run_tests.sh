@@ -2,7 +2,8 @@
 set -euo pipefail
 
 # Determine repo root (script dir is tests)
-SCRIPT_DIR="$(cd "$(dirname \"${BASH_SOURCE[0]}\")" && pwd)"
+# Note: don't escape the inner quotes; otherwise a literal quote ends up in the path
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 BUILD_DIR="${ROOT_DIR}/build"
 BIN_DIR="${BUILD_DIR}/bin"
@@ -37,12 +38,14 @@ run_case() {
   local cmd="$2"
   local expected_file="$3"
   local actual_file="$4"
-  ((case_cnt++))
+  # Use arithmetic assignment to be safe with `set -e` (post-increment can return 0 and exit)
+  case_cnt=$((case_cnt + 1))
   echo "Running ${name}..."
   bash -c "${cmd}" >"${actual_file}" 2>&1 || true
   if diff -u "${expected_file}" "${actual_file}" >/dev/null; then
     echo "${name} PASS" | tee -a "${RESULT_FILE}"
-    ((pass_cnt++))
+  # Safe increment under `set -e`
+  pass_cnt=$((pass_cnt + 1))
   else
     echo "${name} FAIL" | tee -a "${RESULT_FILE}"
     echo "--- Expected:" >>"${RESULT_FILE}"
