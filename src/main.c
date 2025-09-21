@@ -10,6 +10,7 @@
 #endif
 #include "GameConfig.h"
 #include "Player.h"
+#include "ui.h"
 
 void run_test_helloworld() {
     printf("Hello World!\n");
@@ -70,6 +71,39 @@ void run_interactive_game() {
         if (currentPlayer != NULL) {
             printf("\nCurrent turn: %s\n", player_getName(currentPlayer->character));
         }
+
+         // 游戏主循环
+        while (1) {
+            Player* currentPlayer = playerManager_getCurrentPlayer(&playerManager);
+            if (currentPlayer == NULL) break;
+
+            // 显示带颜色的提示符
+            ui_display_prompt(currentPlayer);
+
+            // 读取并处理命令
+            char cmd[128];
+            if (fgets(cmd, sizeof(cmd), stdin) == NULL) break;
+            cmd[strcspn(cmd, "\n")] = 0;
+
+            // 这里处理命令，比如 roll, query, help, quit 等
+            if (strcmp(cmd, "quit") == 0) {
+                printf("游戏结束。\n");
+                break;
+            } else if (strcmp(cmd, "help") == 0) {
+                ui_display_help();
+            } else if (strcmp(cmd, "query") == 0) {
+                // 显示当前玩家资产
+                printf("资金：%d，点数：%d，位置：%d\n", 
+                    currentPlayer->money, currentPlayer->points, currentPlayer->position);
+            } else if (strcmp(cmd, "roll") == 0) {
+                // 掷骰子逻辑
+                printf("（此处掷骰子...）\n");
+                // playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+            } else {
+                printf("未知命令，请输入 help 查看帮助。\n");
+            }
+        }
+
     } else {
         printf("Game initialization failed!\n");
     }
