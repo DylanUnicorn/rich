@@ -1,5 +1,7 @@
 #include "Structure.h"
 #include "map.h"
+#include "ui.h"
+#include "Player.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -63,6 +65,8 @@ void init_map(Structure* map){
             else {  
                 map[i * WIDTH + j].type = ' '; // Non-playable area
             }
+            map[i * WIDTH + j].owner = NULL; // No owner initially
+            map[i * WIDTH + j].level = 0; // Initial land level
         }
     }
 }
@@ -72,7 +76,16 @@ void print_map(Structure* map){
 
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
-            printf("%c ", map[i * WIDTH + j].type);
+            if(map[i * WIDTH + j].owner != NULL){
+                // If owned, display the owner's color code
+                char ownerCode = player_getColorCode(map[i * WIDTH + j].owner->character);
+                //printf("%c ", ownerCode);
+                printf("%s%c%s ", ui_get_player_color(map[i * WIDTH + j].owner->character), 
+                        ownerCode, COLOR_RESET);
+            }
+            else{
+                printf("%c ", map[i * WIDTH + j].type);
+            }
         }
         printf("\n");
     }

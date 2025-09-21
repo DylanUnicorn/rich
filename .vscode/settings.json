@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "gameconfig.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "player.h": "c"
     }
 }

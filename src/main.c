@@ -15,8 +15,11 @@
 #include "prophouse.h"
 #include "map.h"
 #include "land.h"
-#include "GameLogic.h"
-#include "gifthouse.h"
+#include "Structure.h"
+#include "TollFee.h"
+#include "Tool.h"
+
+
 void run_test_helloworld() {
     printf("Hello World!\n");
 }
@@ -114,7 +117,7 @@ void run_interactive_game() {
                  
                 int i = find_place(map, currentPlayer);
 
-                if(map[i].type == '0'){
+                if(map[i].type == '0' && map[i].owner== NULL){
                     printf("此处为空地，可以购买。\n");
                     printf("是否购买此地？(y/n): ");
                     char choice;
@@ -134,16 +137,47 @@ void run_interactive_game() {
                     else {
                         printf("错误指令，输入help寻求帮助。\n");
                     }
-                } 
-                else {
-                    game_handle_cell_event(currentPlayer, &map[i], &playerManager);
-                } 
+                }
+                else if(map[i].owner == currentPlayer){
+                    printf("此处为你拥有的地产，可以升级或出售。\n");
+                    printf("是否升级此地？(u 升级 / s 出售 / n 不操作): ");
+                    char choice;
+                    //scanf(" %c", &choice);
+                    if (scanf(" %c", &choice) != 1) {
+                        // 处理输入错误
+                        printf("输入错误，请输入 u, s 或 n。\n");
+                        continue;
+                    }
+                    while (getchar() != '\n'); // 清除输入缓冲区
+                    if (choice == 'u' || choice == 'U') {
+                        upgrade_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
+                    } 
+                    else if (choice == 's' || choice == 'S') {
+                        sell_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
+                    }
+                    else if(choice == 'n' || choice == 'N'){
+                        printf("放弃操作此地。\n");
+                    }
+                    else {
+                        printf("错误指令，输入help寻求帮助。\n");
+                    }
+                }
+                else if(map[i].owner != NULL && map[i].owner != currentPlayer){
+                    printf("此处为%s的地产，你需要支付过路费。\n", player_getName(map -> owner -> character));
+                    GetTollFee(currentPlayer,map + currentPlayer->position,&playerManager);
+                }
+                else{
+                    printf("此处为特殊地块，触发相应事件。\n");
+                    //trigger_special_tile_event(map, currentPlayer);
+                }
+                
                 playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-            }else {
+            } 
+            else {
                 printf("未知命令，请输入 help 查看帮助。\n");
             }
         }
-    } 
+    }
     else {
         printf("Game initialization failed!\n");
     }
@@ -173,19 +207,3 @@ int main(int argc, char* argv[]) {
     
     return 0;
 }
-
-// int main() {
-//     GameConfig config;
-//     PlayerManager playerManager;
-//     Game_Init(&config,&playerManager);
-//     while (1)
-//     {
-//         for (int i = 0;i<playerManager.playerCount;i++)
-//         {
-//             printf("\033[2J\033[H");
-//             printf("%s",player_getName(playerManager.players[i].character));
-//             getchar();
-//         }
-        
-//     }
-// }
