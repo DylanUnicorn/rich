@@ -14,7 +14,7 @@
 #include "roll.h"
 #include "prophouse.h"
 #include "map.h"
-
+#include"TollFee.h"
 
 void run_test_helloworld() {
     printf("Hello World!\n");
@@ -79,7 +79,6 @@ void run_interactive_game() {
 
          // 游戏主循环
         while (1) {
-            
             print_map(map);
             Player* currentPlayer = playerManager_getCurrentPlayer(&playerManager);
             if (currentPlayer == NULL) break;
@@ -111,9 +110,9 @@ void run_interactive_game() {
             } else {
                 printf("未知命令，请输入 help 查看帮助。\n");
             }
-
-            playerManager_nextPlayer(&playerManager);
             
+            playerManager_nextPlayer(&playerManager);
+
         }
 
     } else {
