@@ -14,8 +14,8 @@ static inline const char* getPlayerColor(char code) {
     switch (code) {
         case 'Q': return COLOR_RED;
         case 'A': return COLOR_GREEN;
-        case 'S': return COLOR_YELLOW;
-        case 'J': return COLOR_BLUE;
+        case 'S': return COLOR_BLUE;
+        case 'J': return COLOR_YELLOW;
         default:  return COLOR_WHITE;
     }
 }
