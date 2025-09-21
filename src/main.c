@@ -15,7 +15,7 @@
 #include "prophouse.h"
 #include "map.h"
 #include "land.h"
-
+#include "windows.h"
 
 void run_test_helloworld() {
     printf("Hello World!\n");
@@ -149,6 +149,7 @@ void run_interactive_game() {
 
 int main(int argc, char* argv[]) {
     /* Check command line arguments */
+    SetConsoleOutputCP(65001);
     if (argc > 1) {
         if (strcmp(argv[1], "testhelloworld") == 0) {
             run_test_helloworld();
