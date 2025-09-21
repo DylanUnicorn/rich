@@ -1,18 +1,25 @@
 @echo off
-REM 大富翁游戏Windows构建脚本
-REM 使用方法: build.bat [clean|test|debug|release|format|check]
+REM 大富翁游戏 Windows 构建脚本
+REM 用法: build.bat [clean|test|debug|release|format|check|run|ci|help]
 
-setlocal enabledelayedexpansion
+setlocal EnableExtensions EnableDelayedExpansion
 
-set PROJECT_DIR=%~dp0
-set BUILD_DIR=%PROJECT_DIR%build
-set CMAKE_GENERATOR="Visual Studio 16 2019"
+REM 记录并切换到 UTF-8 代码页，避免中文输出乱码
+for /f "tokens=2 delims=: " %%a in ('chcp') do set "_ORIG_CP=%%a"
+chcp 65001 >nul
 
-REM 检查CMake是否安装
+set "PROJECT_DIR=%~dp0"
+set "BUILD_DIR=%PROJECT_DIR%build"
+set "ACTIVE_CONFIG="
+set "CMAKE_GENERATOR="
+set "IS_MULTI_CONFIG=0"
+
+REM 基础环境检查
 where cmake >nul 2>nul
 if %errorlevel% neq 0 (
-    echo [ERROR] CMake未安装或未添加到PATH
-    exit /b 1
+    echo [ERROR] 未检测到 CMake，请安装并加入 PATH 后重试
+    call :_restore_cp & exit /b 1
+)
 )
 
 :main
@@ -40,18 +47,68 @@ if exist "%BUILD_DIR%" (
 echo [SUCCESS] 构建目录已清理
 goto :eof
 
+:detect_generator
+REM 优先使用 Ninja，其次自动选择最新的 Visual Studio，找不到则交由 CMake 自选
+set "CMAKE_GENERATOR="
+set "IS_MULTI_CONFIG=0"
+
+where ninja >nul 2>nul
+if %errorlevel%==0 (
+    set "CMAKE_GENERATOR=Ninja"
+    set "IS_MULTI_CONFIG=0"
+    echo [INFO] 使用生成器: Ninja
+    goto :eof
+)
+
+set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
+if exist "%VSWHERE%" (
+    for /f "usebackq delims=" %%v in (`"%VSWHERE%" -latest -products * -requires Microsoft.Component.MSBuild -property installationVersion`) do set "VSVER=%%v"
+    if defined VSVER (
+        echo [INFO] 检测到 Visual Studio 版本: !VSVER!
+        set "VSMAJOR=!VSVER:~0,2!"
+        if "!VSMAJOR!"=="17" (
+            set "CMAKE_GENERATOR=Visual Studio 17 2022"
+            set "IS_MULTI_CONFIG=1"
+        ) else if "!VSMAJOR!"=="16" (
+            set "CMAKE_GENERATOR=Visual Studio 16 2019"
+            set "IS_MULTI_CONFIG=1"
+        )
+    )
+)
+
+if not defined CMAKE_GENERATOR (
+    echo [INFO] 未检测到 Ninja 或 Visual Studio，交由 CMake 选择默认生成器
+    set "IS_MULTI_CONFIG=0"
+)
+goto :eof
+
 :configure
 set build_type=%1
 if "%build_type%"=="" set build_type=Release
+set "ACTIVE_CONFIG=%build_type%"
 
 echo [INFO] 配置CMake (构建类型: %build_type%)...
 if not exist "%BUILD_DIR%" mkdir "%BUILD_DIR%"
 cd /d "%BUILD_DIR%"
 
-cmake .. -G %CMAKE_GENERATOR% -A x64 -DCMAKE_BUILD_TYPE=%build_type%
+REM 自动检测并选择生成器
+call :detect_generator
+
+set "CMAKE_ARGS=-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+if "%IS_MULTI_CONFIG%"=="0" set "CMAKE_ARGS=!CMAKE_ARGS! -DCMAKE_BUILD_TYPE=%build_type%"
+
+if defined CMAKE_GENERATOR (
+    if /i "%CMAKE_GENERATOR%"=="Ninja" (
+        cmake .. -G "%CMAKE_GENERATOR%" !CMAKE_ARGS!
+    ) else (
+        cmake .. -G "%CMAKE_GENERATOR%" -A x64 !CMAKE_ARGS!
+    )
+) else (
+    cmake .. !CMAKE_ARGS!
+)
 if %errorlevel% neq 0 (
     echo [ERROR] CMake配置失败
-    exit /b 1
+    call :_restore_cp & exit /b 1
 )
 echo [SUCCESS] CMake配置完成
 goto :eof
@@ -59,10 +116,14 @@ goto :eof
 :build
 echo [INFO] 构建项目...
 cd /d "%BUILD_DIR%"
-cmake --build . --config Release --parallel
+if "%IS_MULTI_CONFIG%"=="1" (
+    cmake --build . --config %ACTIVE_CONFIG% --parallel
+) else (
+    cmake --build . --parallel
+)
 if %errorlevel% neq 0 (
     echo [ERROR] 项目构建失败
-    exit /b 1
+    call :_restore_cp & exit /b 1
 )
 echo [SUCCESS] 项目构建完成
 goto :eof
@@ -87,10 +148,14 @@ if not exist "%BUILD_DIR%" (
     call :build
 )
 cd /d "%BUILD_DIR%"
-ctest -C Debug --output-on-failure --verbose
+if "%IS_MULTI_CONFIG%"=="1" (
+    ctest -C %ACTIVE_CONFIG% --output-on-failure --verbose
+) else (
+    ctest --output-on-failure --verbose
+)
 if %errorlevel% neq 0 (
     echo [ERROR] 测试失败
-    exit /b 1
+    call :_restore_cp & exit /b 1
 )
 echo [SUCCESS] 所有测试通过
 goto :eof
@@ -103,13 +168,10 @@ if %errorlevel% neq 0 (
     goto :eof
 )
 
-for /r "%PROJECT_DIR%src" %%f in (*.cpp *.h) do (
+for /r "%PROJECT_DIR%src" %%f in (*.c *.h) do (
     clang-format -i "%%f"
 )
-for /r "%PROJECT_DIR%include" %%f in (*.cpp *.h) do (
-    clang-format -i "%%f"
-)
-for /r "%PROJECT_DIR%tests" %%f in (*.cpp *.h) do (
+for /r "%PROJECT_DIR%include" %%f in (*.c *.h) do (
     clang-format -i "%%f"
 )
 echo [SUCCESS] 代码格式化完成
@@ -133,25 +195,27 @@ if %errorlevel% neq 0 (
     echo [WARNING] cppcheck未安装，跳过静态分析
     goto :eof
 )
-
-cppcheck --enable=all --std=c++17 --suppress=missingIncludeSystem --suppress=unusedFunction --error-exitcode=1 --quiet "%PROJECT_DIR%src" "%PROJECT_DIR%include"
+cppcheck --enable=all --std=c99 --language=c --suppress=missingIncludeSystem --suppress=unusedFunction --error-exitcode=1 --quiet "%PROJECT_DIR%src" "%PROJECT_DIR%include"
 if %errorlevel% neq 0 (
     echo [ERROR] 静态代码分析发现问题
-    exit /b 1
+    call :_restore_cp & exit /b 1
 )
 echo [SUCCESS] 静态代码分析通过
 goto :eof
 
 :run
 echo [INFO] 运行游戏...
-if not exist "%BUILD_DIR%\bin\Release\RichGame.exe" (
-    if not exist "%BUILD_DIR%\bin\Debug\RichGame.exe" (
-        echo [ERROR] 游戏可执行文件不存在，请先构建项目
-        exit /b 1
-    )
-    set GAME_EXE=%BUILD_DIR%\bin\Debug\RichGame.exe
+set "GAME_EXE="
+if "%IS_MULTI_CONFIG%"=="1" (
+    if exist "%BUILD_DIR%\bin\%ACTIVE_CONFIG%\RichGame.exe" set "GAME_EXE=%BUILD_DIR%\bin\%ACTIVE_CONFIG%\RichGame.exe"
 ) else (
-    set GAME_EXE=%BUILD_DIR%\bin\Release\RichGame.exe
+    if exist "%BUILD_DIR%\bin\RichGame.exe" set "GAME_EXE=%BUILD_DIR%\bin\RichGame.exe"
+    if not defined GAME_EXE if exist "%BUILD_DIR%\RichGame.exe" set "GAME_EXE=%BUILD_DIR%\RichGame.exe"
+)
+
+if not defined GAME_EXE (
+    echo [ERROR] 游戏可执行文件不存在，请先构建项目
+    call :_restore_cp & exit /b 1
 )
 
 cd /d "%BUILD_DIR%"
@@ -193,8 +257,16 @@ goto :eof
 REM 检查是否在项目根目录
 if not exist "%PROJECT_DIR%CMakeLists.txt" (
     echo [ERROR] 请在项目根目录运行此脚本
-    exit /b 1
+    call :_restore_cp & exit /b 1
 )
 
 REM 执行主函数
 call :main %*
+set "_EXITCODE=%ERRORLEVEL%"
+call :_restore_cp
+exit /b %_EXITCODE%
+
+:_restore_cp
+REM 恢复原代码页
+if defined _ORIG_CP chcp %_ORIG_CP% >nul
+goto :eof
