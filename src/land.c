@@ -11,6 +11,7 @@ void buy_land(Structure* map, int position, Player* player) {
         if (player_getMoney(player) >= map->money) {
             player_setMoney(player, player_getMoney(player) - map->money);
             map->owner = player;
+            map->level = 0; // Initial land level
             printf("%s bought land at position %d for %d .\n", player_getName(player->character), position, map->money);
         } else {
             printf("%s does not have enough money to buy this land.\n", player_getName(player->character));
@@ -25,10 +26,10 @@ void sell_land(Structure* map, int position, Player* player) {
     if (map == NULL || player == NULL || position < 0 || position >= HEIGHT * WIDTH) return;
 
     if (map -> owner == player) { // Only the owner can sell the land
-        int sellPrice = map->money / 2; // Selling price is half of the purchase price
+        int sellPrice = map->money * (map->level + 1) * 2; // Selling price is twice of the purchase price
         player_setMoney(player, player_getMoney(player) + sellPrice);
         map->owner = NULL;
-        map->level = 0; // Reset land level
+        map->level = -1; // Reset land level
         printf("%s sold land at position %d for %d .\n", player_getName(player->character), position, sellPrice);
     } else {
         printf("You do not own this land and cannot sell it.\n");
@@ -45,13 +46,16 @@ void upgrade_land(Structure* map, int position, Player* player) {
                 player_setMoney(player, player_getMoney(player) - upgradeCost);
                 map->level++;
                 printf("%s upgraded land at position %d to level %d for %d .\n", player_getName(player->character), position, map->level, upgradeCost);
-            } else {
+            }
+            else {
                 printf("%s does not have enough money to upgrade this land.\n", player_getName(player->character));
             }
-        } else {
+        }
+        else {
             printf("This land is already at maximum level.\n");
         }
-    } else {
+    }
+    else {
         printf("You do not own this land and cannot upgrade it.\n");
     }
 }

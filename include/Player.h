@@ -29,16 +29,16 @@ typedef struct {
     int money;
     int points;
     int position;
-    bool in_hospital;     //标志是否在医院
-    bool in_prison;       //标志是否在监狱
-    int hospital_days;    //住院天数
-    int prison_days;      //服刑天数
-    int points_multiplier;//点数倍数（1或2）
-    int god_bless_days;  //倍数剩余天数
-    bool active;          //标志是否破产 
-    bool god;             //标志是否财神附体
-    int house[100];       //当前拥有的房产编号
-    Tool tool;            //当前拥有的道具
+    bool in_hospital;       //标志是否在医院
+    bool in_prison;         //标志是否在监狱
+    int hospital_days;      //住院天数
+    int prison_days;        //服刑天数
+    int points_multiplier;  //点数倍数（1或2）
+    int god_bless_days;     //倍数剩余天数
+    bool active;            //标志是否破产 
+    bool god;               //标志是否财神附体
+    int house[100];         //当前拥有的房产编号
+    Tool tool;              //当前拥有的道具
 } Player;
 
 /**

@@ -7,7 +7,7 @@
 #include "Structure.h"
 
 void init_map(Structure* map);
-void print_map(Structure* map);
+void print_map(Structure* map, Player* player);
 int find_place(Structure* map, Player* player);
 
 #endif

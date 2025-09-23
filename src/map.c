@@ -64,27 +64,34 @@ void init_map(Structure* map){
             } 
             else {  
                 map[i * WIDTH + j].type = ' '; // Non-playable area
+                map[i * WIDTH + j].id = -1;
             }
             map[i * WIDTH + j].owner = NULL; // No owner initially
-            map[i * WIDTH + j].level = 0; // Initial land level
+            map[i * WIDTH + j].level = -1; // Initial land level
         }
     }
 }
 
-void print_map(Structure* map){
+void print_map(Structure* map, Player* player){
     if (map == NULL) return;
 
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
             if(map[i * WIDTH + j].owner != NULL){
                 // If owned, display the owner's color code
-                char ownerCode = player_getColorCode(map[i * WIDTH + j].owner->character);
-                //printf("%c ", ownerCode);
-                printf("%s%c%s ", ui_get_player_color(map[i * WIDTH + j].owner->character), 
-                        ownerCode, COLOR_RESET);
+                printf("%s%d%s ", ui_get_player_color(map[i * WIDTH + j].owner->character), 
+                        map[i * WIDTH + j].level, COLOR_RESET); // Display land level with color
             }
             else{
-                printf("%c ", map[i * WIDTH + j].type);
+                if(map[i * WIDTH + j].id == player->position){
+                    // If the player is on this tile, display the player's color code
+                    printf("%s%c%s ", ui_get_player_color(player->character), 
+                        player_getColorCode(player->character), COLOR_RESET);
+                }
+                else {
+                    printf("%c ", map[i * WIDTH + j].type);
+                    //printf("%d ", map[i * WIDTH + j].id);
+                }
             }
         }
         printf("\n");
