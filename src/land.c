@@ -12,13 +12,13 @@ void buy_land(Structure* map, int position, Player* player) {
             player_setMoney(player, player_getMoney(player) - map->money);
             map->owner = player;
             map->level = 0; // Initial land level
-            printf("%s bought land at position %d for %d .\n", player_getName(player->character), position, map->money);
+            printf("%s以%d元购买了位置%d的土地。\n", player_getName(player->character), map->money, position);
         } else {
-            printf("%s does not have enough money to buy this land.\n", player_getName(player->character));
+            printf("%s没有足够的资金购买这块土地。\n", player_getName(player->character));
         }
     }
     else {
-        printf("This land cannot be bought.\n");
+        printf("这块土地不能购买。\n");
     }
 }
 
@@ -30,9 +30,9 @@ void sell_land(Structure* map, int position, Player* player) {
         player_setMoney(player, player_getMoney(player) + sellPrice);
         map->owner = NULL;
         map->level = -1; // Reset land level
-        printf("%s sold land at position %d for %d .\n", player_getName(player->character), position, sellPrice);
+        printf("%s以%d元出售了位置%d的土地。\n", player_getName(player->character), sellPrice, position);
     } else {
-        printf("You do not own this land and cannot sell it.\n");
+        printf("无法出售。\n");
     }
 }
 
@@ -45,18 +45,18 @@ void upgrade_land(Structure* map, int position, Player* player) {
             if (player_getMoney(player) >= upgradeCost) {
                 player_setMoney(player, player_getMoney(player) - upgradeCost);
                 map->level++;
-                printf("%s upgraded land at position %d to level %d for %d .\n", player_getName(player->character), position, map->level, upgradeCost);
+                printf("%s花费%d元将位置%d的土地升级到%d级。\n", player_getName(player->character), upgradeCost, position, map->level);
             }
             else {
-                printf("%s does not have enough money to upgrade this land.\n", player_getName(player->character));
+                printf("%s没有足够的资金升级这块土地。\n", player_getName(player->character));
             }
         }
         else {
-            printf("This land is already at maximum level.\n");
+            printf("这块土地已达到最高等级。\n");
         }
     }
     else {
-        printf("You do not own this land and cannot upgrade it.\n");
+        printf("无法升级。\n");
     }
 }
 

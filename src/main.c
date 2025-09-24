@@ -123,7 +123,7 @@ void run_interactive_game() {
                     printf("此处为空地，可以购买。\n");
                     printf("是否购买此地？(y/n): ");
                     char choice;
-                    //scanf(" %c", &choice);
+                    
                     if (scanf(" %c", &choice) != 1) {
                         // 处理输入错误
                         printf("输入错误，请输入 y 或 n。\n");

@@ -64,7 +64,6 @@ void ui_display_help() {
     printf("  query       - 查看自己的资产信息\n");
     printf("  help        - 显示帮助信息\n");
     printf("  quit        - 退出游戏\n");
-    printf("  step <步数> - 测试命令：指定移动步数\n");
     printf("\n");
 }
 

@@ -27,7 +27,7 @@ void gameConfig_promptForInitialMoney(GameConfig* config) {
     int money;
     
     while (true) {
-        printf("Please enter initial money (1000-50000), default 10000: ");
+        printf("请输入初始资金 (1000-50000)，默认 10000: ");
         
         if (fgets(line, sizeof(line), stdin) == NULL) {
             break;
@@ -51,14 +51,14 @@ void gameConfig_promptForInitialMoney(GameConfig* config) {
             if (gameConfig_setInitialMoney(config, money)) {
                 break;
             } else {
-                printf("Error: Initial money must be between 1000-50000, please re-enter.\n");
+                printf("错误：初始资金必须在 1000-50000 之间，请重新输入。\n");
             }
         } else {
-            printf("Error: Please enter a valid number.\n");
+            printf("错误：请输入一个有效的数字。\n");
         }
     }
     
-    printf("Initial money set to: %d yuan\n", config->initialMoney);
+    printf("初始资金设置为: %d 元\n", config->initialMoney);
 }
 
 bool gameConfig_promptForPlayerSelection(GameConfig* config, PlayerManager* playerManager) {
@@ -93,7 +93,7 @@ bool gameConfig_promptForPlayerSelection(GameConfig* config, PlayerManager* play
             }
             
             if (allSuccess) {
-                printf("Player selection successful!\n");
+                printf("玩家选择成功！\n");
                 for (int i = 0; i < playerManager_getPlayerCount(playerManager); i++) {
                     Player* player = playerManager_getPlayer(playerManager, i);
                     if (player != NULL) {
@@ -106,7 +106,7 @@ bool gameConfig_promptForPlayerSelection(GameConfig* config, PlayerManager* play
             }
         }
         
-        printf("Error: Please enter 2-4 unique player numbers (e.g.: 13, 234, 1234).\n");
+        printf("错误：请输入 2-4 个不同的玩家编号 (例如：13, 234, 1234)。\n");
     }
 }
 
@@ -155,10 +155,10 @@ int gameConfig_parsePlayerSelection(const char* selection, PlayerCharacter* char
 }
 
 void gameConfig_displayPlayerSelectionPrompt(void) {
-    printf("Please select 2-4 unique players, enter numbers:\n");
-    printf("1. Qian Furen (Q)\n");
-    printf("2. Aturber (A)\n");
-    printf("3. Sun Xiaomei (S)\n");
-    printf("4. Jin Beibei (J)\n");
-    printf("Please enter (e.g.: 13, 234, 1234): ");
+    printf("请选择 2-4 个不同的玩家，输入编号：\n");
+    printf("1. 钱夫人 (Q)\n");
+    printf("2. 阿土伯 (A)\n");
+    printf("3. 孙小美 (S)\n");
+    printf("4. 金贝贝 (J)\n");
+    printf("请输入 (例如：13, 234, 1234): ");
 }
