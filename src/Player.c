@@ -14,13 +14,13 @@ void player_init(Player* player, PlayerCharacter character, int initialMoney) {
 const char* player_getName(PlayerCharacter character) {
     switch (character) {
         case QIAN_FUREN:
-            return "Qian Furen";
+            return "钱夫人";
         case ATURBER:
-            return "Aturber";
+            return "阿土伯";
         case SUN_XIAOMEI:
-            return "Sun Xiaomei";
+            return "孙小美";
         case JIN_BEIBEI:
-            return "Jin Beibei";
+            return "金贝贝";
         default:
             return "Unknown";
     }
@@ -165,4 +165,17 @@ Player* playerManager_getPlayer(PlayerManager* manager, int index) {
     if (manager == NULL || index < 0 || index >= manager->playerCount) return NULL;
     
     return &manager->players[index];
+}
+
+bool playerManager_isGameWon(const PlayerManager* manager) {
+    if (manager == NULL) return false;   
+    // 如果只剩下1个玩家，游戏胜利
+    return manager->playerCount == 1;
+}
+
+Player* playerManager_getWinner(PlayerManager* manager) {
+    if (manager == NULL || manager->playerCount != 1) return NULL;
+    
+    // 返回最后剩下的玩家
+    return &manager->players[0];
 }

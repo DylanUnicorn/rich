@@ -164,8 +164,18 @@ void run_interactive_game() {
                     }
                 }
                 else if(map[i].owner != NULL && map[i].owner != currentPlayer){
-                    printf("此处为%s的地产，你需要支付过路费。\n", player_getName(map -> owner -> character));
-                    GetTollFee(currentPlayer,map + currentPlayer->position,&playerManager);
+                    printf("此处为%s的地产，你需要支付过路费。\n", player_getName(map[i].owner->character));
+                    GetTollFee(currentPlayer,&map[i],&playerManager);
+                    if (playerManager_isGameWon(&playerManager)) {
+                        Player* winner = playerManager_getWinner(&playerManager);
+                        if (winner != NULL) {
+                            printf("游戏结束！%s 获胜！\n", player_getName(winner->character));
+                        }
+                        break;
+                        }
+                    else{
+                        printf("游戏继续。\n");
+                    }
                 }
                 else{
                     printf("此处为特殊地块，触发相应事件。\n");
@@ -183,73 +193,6 @@ void run_interactive_game() {
                 // 显示当前玩家资产
                 printf("资金：%d，点数：%d，位置：%d\n", 
                     currentPlayer->money, currentPlayer->points, currentPlayer->position);
-            }
-            else if(strcmp(cmd, "step") == 0) {
-                printf("\n请输入你要前进的步数:\n");
-                int step;
-                if (scanf("%d", &step) != 1) {
-                    // 处理输入错误
-                    printf("输入错误，请输入一个整数。\n");
-                    while (getchar() != '\n'); // 清除输入缓冲区
-                    continue;
-                }
-                while (getchar() != '\n'); // 清除输入缓冲区
-                currentPlayer->position = (currentPlayer->position + step) % 70; // 假设地图有70个位置
-                printf("你移动到了位置 %d\n", currentPlayer->position);
-                int i = find_place(map, currentPlayer);
-                if(map[i].type == '0' && map[i].owner== NULL){
-                    printf("此处为空地，可以购买。\n");
-                    printf("是否购买此地？(y/n): ");
-                    char choice;
-                    //scanf(" %c", &choice);
-                    if (scanf(" %c", &choice) != 1) {
-                        // 处理输入错误
-                        printf("输入错误，请输入 y 或 n。\n");
-                        continue;
-                    }
-                    while (getchar() != '\n'); // 清除输入缓冲区
-                    if (choice == 'y' || choice == 'Y') {
-                        buy_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
-                    } 
-                    else if(choice == 'n' || choice == 'N') {
-                        printf("放弃购买此地。\n");
-                    }
-                    else {
-                        printf("错误指令，输入help寻求帮助。\n");
-                    }
-                }
-                else if(map[i].owner == currentPlayer){
-                    printf("此处为你拥有的地产，可以升级或出售。\n");
-                    printf("是否升级此地？(u 升级 / s 出售 / n 不操作): ");
-                    char choice;
-                    if (scanf(" %c", &choice) != 1) {
-                        // 处理输入错误
-                        printf("输入错误，请输入 u, s 或 n。\n");
-                        continue;
-                    }
-                    while (getchar() != '\n'); // 清除输入缓冲区
-                    if (choice == 'u' || choice == 'U') {
-                        upgrade_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
-                    } 
-                    else if (choice == 's' || choice == 'S') {
-                        sell_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
-                    }
-                    else if(choice == 'n' || choice == 'N'){
-                        printf("放弃操作此地。\n");
-                    }
-                    else {
-                        printf("错误指令，输入help寻求帮助。\n");
-                    }
-                }
-                else if(map[i].owner != NULL && map[i].owner != currentPlayer){
-                    printf("此处为%s的地产，你需要支付过路费。\n", player_getName(map -> owner -> character));
-                    GetTollFee(currentPlayer,map + currentPlayer->position,&playerManager);
-                }
-                else{
-                    printf("此处为特殊地块，触发相应事件。\n");
-                    game_handle_cell_event(currentPlayer, &map[i], &playerManager);
-                    //trigger_special_tile_event(map, currentPlayer);
-                }
             }
             else if (strcmp(cmd, "roll") == 0) {
                 Player_use_roll_dice( currentPlayer);
@@ -281,7 +224,7 @@ void run_interactive_game() {
                 }
                 else if(map[i].owner == currentPlayer){
                     printf("此处为你拥有的地产，可以升级或出售。\n");
-                    printf("是否升级此地？(u 升级 / s 出售 / n 不操作): ");
+                    printf("是否升级或出售此地？(u 升级 / s 出售 / n 不操作): ");
                     char choice;
                     if (scanf(" %c", &choice) != 1) {
                         // 处理输入错误
@@ -303,8 +246,18 @@ void run_interactive_game() {
                     }
                 }
                 else if(map[i].owner != NULL && map[i].owner != currentPlayer){
-                    printf("此处为%s的地产，你需要支付过路费。\n", player_getName(map -> owner -> character));
-                    GetTollFee(currentPlayer,map + currentPlayer->position,&playerManager);
+                    printf("此处为%s的地产，你需要支付过路费。\n", player_getName(map[i].owner->character));
+                    GetTollFee(currentPlayer,&map[i],&playerManager);
+                    if (playerManager_isGameWon(&playerManager)) {
+                        Player* winner = playerManager_getWinner(&playerManager);
+                        if (winner != NULL) {
+                            printf("游戏结束！%s 获胜！\n", player_getName(winner->character));
+                        }
+                        break;
+                        }
+                    else{
+                        printf("游戏继续。\n");
+                    }
                 }
                 else{
                     printf("此处为特殊地块，触发相应事件。\n");
@@ -320,7 +273,7 @@ void run_interactive_game() {
         }
     }
     else {
-        printf("Game initialization failed!\n");
+        printf("游戏初始化失败！\n");
     }
 }
 
