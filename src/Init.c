@@ -13,8 +13,8 @@ int Game_Init(GameConfig *config,PlayerManager *playerManager){
     
     /* Select players */
     if (gameConfig_promptForPlayerSelection(config, playerManager)) {
-        printf("\nGame initialization completed!\n");
-        printf("Participating players:\n");
+        printf("\n游戏初始化完成！\n");
+        printf("参与玩家：\n");
         
         int playerCount = playerManager_getPlayerCount(playerManager);
         for (int i = 0; i < playerCount; i++) {
@@ -30,10 +30,10 @@ int Game_Init(GameConfig *config,PlayerManager *playerManager){
         
         Player* currentPlayer = playerManager_getCurrentPlayer(playerManager);
         if (currentPlayer != NULL) {
-            printf("\nCurrent turn: %s\n", player_getName(currentPlayer->character));
+            printf("\n当前回合: %s\n", player_getName(currentPlayer->character));
         }
     } else {
-        printf("Game initialization failed!\n");
+        printf("游戏初始化失败！\n");
         return 1;
     }
     return 0;
