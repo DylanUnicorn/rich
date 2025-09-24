@@ -186,6 +186,8 @@ void playerManager_reset(PlayerManager* manager);
  * @return 玩家指针，如果索引无效则返回NULL
  */
 Player* playerManager_getPlayer(PlayerManager* manager, int index);
+bool playerManager_isGameWon(const PlayerManager* manager);
+Player* playerManager_getWinner(PlayerManager* manager);
 
 #ifdef __cplusplus
 }
