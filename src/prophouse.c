@@ -31,7 +31,7 @@ void player_getintoPropHouse(Player* currentPlayer) {
             printf("退出道具屋。\n");
             break;          
         } else if (choice == '1') {
-            if (currentPlayer->points >= 50 || currentPlayer->tool.total < 10) {
+            if (currentPlayer->points >= 50 && currentPlayer->tool.total < 10) {
                 currentPlayer->tool.roadblock++;
                 currentPlayer->points -= 50;
                 currentPlayer->tool.total++;
@@ -45,7 +45,7 @@ void player_getintoPropHouse(Player* currentPlayer) {
                 printf("点数不足，无法购买路障。\n");
             }
         } else if (choice == '2') {
-            if (currentPlayer->points >= 30 || currentPlayer->tool.total < 10) {
+            if (currentPlayer->points >= 30 && currentPlayer->tool.total < 10) {
                 currentPlayer->tool.doll++;
                 currentPlayer->points -= 30;
                 currentPlayer->tool.total++;
@@ -59,7 +59,7 @@ void player_getintoPropHouse(Player* currentPlayer) {
                 printf("点数不足，无法购买路障。\n");
             }
         } else if (choice == '3') {
-            if (currentPlayer->points >= 50 || currentPlayer->tool.total < 10) {
+            if (currentPlayer->points >= 50 && currentPlayer->tool.total < 10) {
                 currentPlayer->tool.bomb++;
                 currentPlayer->points -= 50;
                 currentPlayer->tool.total++;

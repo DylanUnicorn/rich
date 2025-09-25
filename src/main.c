@@ -196,7 +196,7 @@ void run_interactive_game() {
                             currentPlayer->tool.roadblock--;
                             currentPlayer->tool.total--;
                             int i = find_place(map, currentPlayer->position + blocks);
-                            map[i].type = TOOL_BLOCK; // 设置为路障
+                            map[i].type = '#'; // 设置为路障
                         }
                         else{
                             printf("你没有路障道具，无法使用。\n");
@@ -220,7 +220,7 @@ void run_interactive_game() {
                             currentPlayer->tool.bomb--;
                             currentPlayer->tool.total--;
                             int i = find_place(map, currentPlayer->position + bombs);
-                            map[i].type = TOOL_BOMB; // 设置为路障
+                            map[i].type = '@'; // 设置为路障
                         }
                         else{
                             printf("你没有炸弹道具，无法使用。\n");
