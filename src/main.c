@@ -87,7 +87,7 @@ void run_interactive_game() {
         while (1) {
             Player* currentPlayer = playerManager_getCurrentPlayer(&playerManager);
             if (currentPlayer == NULL) break;
-            print_map(map, currentPlayer);
+            print_map(map, &playerManager);
 
             // 显示带颜色的提示符
             ui_display_prompt(currentPlayer);
