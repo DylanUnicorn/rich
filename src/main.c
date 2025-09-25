@@ -122,9 +122,8 @@ void run_interactive_game() {
                 if(map[i].type == '0' && map[i].owner== NULL){
                     printf("此处为空地，可以购买。\n");
                     printf("是否购买此地？(y/n): ");
-                    char choice;
-                    
-                    if (scanf(" %c", &choice) != 1) {
+                    char choice;                    
+                    if (scanf("%c", &choice) != 1) {
                         // 处理输入错误
                         printf("输入错误，请输入 y 或 n。\n");
                         continue;
@@ -325,7 +324,6 @@ void run_interactive_game() {
                 else{
                     printf("此处为特殊地块，触发相应事件。\n");
                     game_handle_cell_event(currentPlayer, &map[i], &playerManager);
-                    //trigger_special_tile_event(map, currentPlayer);
                 }
                 
                 playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
