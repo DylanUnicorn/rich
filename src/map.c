@@ -98,10 +98,8 @@ void print_map(Structure* map, Player* player){
     }
 }
 
-int find_place(Structure* map, Player* player) {
-    if (map == NULL || player == NULL) return -1;
-
-    int position = player->position;
+int find_place(Structure* map, int position) {
+    if (map == NULL || position == -1) return -1;
     if (position < 0 || position >= HEIGHT * WIDTH) return -1;
 
     for (int i = 0; i < HEIGHT * WIDTH; i++) {

@@ -4,9 +4,9 @@
 void propHouse_init() {
     // 道具屋初始化
     printf("欢迎来到道具屋，请选择您需要的道具：\n");
-    printf("1. 路障 (价格: 200点)\n");
-    printf("2. 机器人 (价格: 300点)\n");
-    printf("3. 炸弹 (价格: 400点)\n");
+    printf("1. 路障 (价格: 50点)\n");
+    printf("2. 机器娃娃 (价格: 30点)\n");
+    printf("3. 炸弹 (价格: 50点)\n");
     printf("请输入要购买的道具编号(或输入f退出): ");
 }
 
@@ -31,31 +31,46 @@ void player_getintoPropHouse(Player* currentPlayer) {
             printf("退出道具屋。\n");
             break;          
         } else if (choice == '1') {
-            if (currentPlayer->points >= 200) {
+            if (currentPlayer->points >= 50 || currentPlayer->tool.total < 10) {
                 currentPlayer->tool.roadblock++;
-                currentPlayer->points -= 200;
+                currentPlayer->points -= 50;
                 currentPlayer->tool.total++;
                 printf("您已购买了一个路障。剩余点数: %d\n", currentPlayer->points);
-            } else {
+            } 
+            else if(currentPlayer->tool.total>=10){
+                printf("道具数量已达上限，无法购买更多道具。\n");
+            }
+            else
+            {
                 printf("点数不足，无法购买路障。\n");
             }
         } else if (choice == '2') {
-            if (currentPlayer->points >= 300) {
+            if (currentPlayer->points >= 30 || currentPlayer->tool.total < 10) {
                 currentPlayer->tool.doll++;
-                currentPlayer->points -= 300;
+                currentPlayer->points -= 30;
                 currentPlayer->tool.total++;
                 printf("您已购买了一个机器人。剩余点数: %d\n", currentPlayer->points);
-            } else {
-                printf("点数不足，无法购买机器人。\n");
+            } 
+            else if(currentPlayer->tool.total>=10){
+                printf("道具数量已达上限，无法购买更多道具。\n");
+            }
+            else
+            {
+                printf("点数不足，无法购买路障。\n");
             }
         } else if (choice == '3') {
-            if (currentPlayer->points >= 400) {
+            if (currentPlayer->points >= 50 || currentPlayer->tool.total < 10) {
                 currentPlayer->tool.bomb++;
-                currentPlayer->points -= 400;
+                currentPlayer->points -= 50;
                 currentPlayer->tool.total++;
                 printf("您已购买了一个炸弹。剩余点数: %d\n", currentPlayer->points);
-            } else {
-                printf("点数不足，无法购买炸弹。\n");
+            } 
+            else if(currentPlayer->tool.total>=10){
+                printf("道具数量已达上限，无法购买更多道具。\n");
+            }
+            else
+            {
+                printf("点数不足，无法购买路障。\n");
             }
         } else {
             printf("无效选择，请重新选择。\n");  

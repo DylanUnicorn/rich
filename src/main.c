@@ -118,7 +118,7 @@ void run_interactive_game() {
                     int steps = atoi(param);
                     currentPlayer->position = (currentPlayer->position + steps) % 70; // 假设地图有70个位置
                     printf("你移动到了位置 %d\n", currentPlayer->position);
-                int i = find_place(map, currentPlayer);
+                int i = find_place(map, currentPlayer->position);
                 if(map[i].type == '0' && map[i].owner== NULL){
                     printf("此处为空地，可以购买。\n");
                     printf("是否购买此地？(y/n): ");
@@ -188,7 +188,70 @@ void run_interactive_game() {
             } 
             else if (strcmp(cmd, "help") == 0) {
                 ui_display_help();
-            } 
+            }//////////////////////////////////////////////////////////////////////////////////////////
+            else if (strcmp(cmd, "bolck") == 0) {
+                if (param != NULL) {
+                    int blocks = atoi(param);
+                    if(blocks >= -10 && blocks <= 10 && blocks != 0){
+                        if(currentPlayer->tool.roadblock > 0){
+                            currentPlayer->tool.roadblock--;
+                            currentPlayer->tool.total--;
+                            int i = find_place(map, currentPlayer->position + blocks);
+                            map[i].type = TOOL_BLOCK; // 设置为路障
+                        }
+                        else{
+                            printf("你没有路障道具，无法使用。\n");
+                            continue;
+                        }
+                    }
+                    else{
+                        printf("错误: 指令block位置参数应在-10到10之间且不为0\n");
+                        continue;
+                    }
+                }
+                else {
+                    printf("错误: 指令block需要指定位置\n");
+                }
+            } ////////////////////////////////////////////////////////////////////////////////////////
+            else if (strcmp(cmd, "bomb") == 0) {
+                if (param != NULL) {
+                    int bombs = atoi(param);
+                    if(bombs >= -10 && bombs <= 10 && bombs != 0){
+                        if(currentPlayer->tool.bomb > 0){
+                            currentPlayer->tool.bomb--;
+                            currentPlayer->tool.total--;
+                            int i = find_place(map, currentPlayer->position + bombs);
+                            map[i].type = TOOL_BOMB; // 设置为路障
+                        }
+                        else{
+                            printf("你没有炸弹道具，无法使用。\n");
+                            continue;
+                        }
+                    }
+                    else{
+                        printf("错误: 指令bomb位置参数应在-10到10之间且不为0\n");
+                    }
+
+                }
+                else {
+                    printf("错误: 指令bomb需要指定位置\n");
+                }
+            } //////////////////////////////////////////////////////////////////////////////////////
+            else if (strcmp(cmd, "robot") == 0) {
+                if (currentPlayer->tool.doll > 0) {
+                    currentPlayer->tool.doll--;
+                    currentPlayer->tool.total--;
+                    int i = find_place(map, currentPlayer->position);
+                    for(i = 0; i < 10; i++){
+                        map[i].type = TOOL_NONE; // 清除路障或炸弹
+                        break;
+                    }
+                }
+                else {
+                    printf("你没有机器人道具，无法使用。\n");
+                    continue;
+                }
+            } //////////////////////////////////////////////////////////////////////////////////////
             else if (strcmp(cmd, "query") == 0) {
                 // 显示当前玩家资产
                 printf("资金：%d，点数：%d，位置：%d\n", 
@@ -199,7 +262,7 @@ void run_interactive_game() {
                 // 掷骰子逻辑
                 printf("（此处掷骰子...）\n");
                  
-                int i = find_place(map, currentPlayer);
+                int i = find_place(map, currentPlayer->position);
 
                 if(map[i].type == '0' && map[i].owner== NULL){
                     printf("此处为空地，可以购买。\n");
