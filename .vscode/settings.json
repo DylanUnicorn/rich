@@ -2,6 +2,7 @@
     "files.associations": {
         "gameconfig.h": "c",
         "stdio.h": "c",
-        "player.h": "c"
+        "player.h": "c",
+        "map": "c"
     }
 }

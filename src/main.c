@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 #ifdef _WIN32
 #include <io.h>
 #define isatty _isatty
@@ -99,14 +100,14 @@ void run_interactive_game() {
                 printf("你在医院，无法进行其他操作，回车结束回合。\n");
                 currentPlayer->hospital_days--;
                 if(currentPlayer->hospital_days <= 0)
-                currentPlayer->in_hospital = false;
+                    currentPlayer->in_hospital = false;
                 playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
             }
             else if(currentPlayer->in_prison){
                 printf("你在监狱，无法进行其他操作，回车结束回合。\n");
                 currentPlayer->prison_days--;
                 if(currentPlayer->prison_days <= 0)
-                currentPlayer->in_prison = false;
+                    currentPlayer->in_prison = false;
                 playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
             }
 
@@ -133,12 +134,13 @@ void run_interactive_game() {
                 if (param != NULL) {
                     int steps = atoi(param);
                     //如果接下来遇见炸弹就被送往医院
-                    for(int i = 1; i <= steps; i++){
+                    for(int i = 0; i <= steps; i++){
                         int nextPos = (currentPlayer->position + i) % 70;
                         int j = find_place(map, nextPos);
                         if(map[j].type == '@'){
                             printf("你遇见了炸弹，被送往医院！\n");
                             InHospital(currentPlayer);
+                            playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
                             break;
                         }
                         else if(map[j].type == '#'){
@@ -146,6 +148,14 @@ void run_interactive_game() {
                             currentPlayer->position = (currentPlayer->position + i) % 70;
                             playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
                             break;
+                        }
+                        else if(map[j].type == 'P'){
+                        printf("你遇见了监狱，停止前进！\n");
+                        currentPlayer->position = (currentPlayer->position + j) % 70;
+                        currentPlayer->in_prison = true;
+                        currentPlayer->prison_days = 2; // 监狱停留2天
+                        playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                        break;
                         }
                     }
                     currentPlayer->position = (currentPlayer->position + steps) % 70; // 假设地图有70个位置
@@ -286,11 +296,41 @@ void run_interactive_game() {
                     currentPlayer->money, currentPlayer->points, currentPlayer->position);
             }
             else if (strcmp(cmd, "roll") == 0) {
-                Player_use_roll_dice( currentPlayer);
+                //Player_use_roll_dice( currentPlayer);
+                srand(time(NULL));
+                int roll = roll_dice();
+                for(int i = 0; i <= roll; i++){
+                    int nextPos = (currentPlayer->position + i) % 70;
+                    int j = find_place(map, nextPos);
+                    if(map[j].type == '@'){
+                        printf("你遇见了炸弹，被送往医院！\n");
+                        InHospital(currentPlayer);
+                        playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                        break;
+                    }
+                    else if(map[j].type == '#'){
+                        printf("你遇见了路障，停止前进！\n");
+                        currentPlayer->position = (currentPlayer->position + j) % 70;
+                        playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                        break;
+                    }
+                    else if(map[j].type == 'P'){
+                        printf("你遇见了监狱，停止前进！\n");
+                        currentPlayer->position = (currentPlayer->position + j) % 70;
+                        currentPlayer->in_prison = true;
+                        currentPlayer->prison_days = 2; // 监狱停留2天
+                        playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                        break;
+                    }
+                }
+                printf("玩家 %s 掷出了 %d 点，\n", player_getName(currentPlayer->character), roll);
+                currentPlayer->position = (currentPlayer->position + roll) % 70; // 假设地图有70个位置
+                printf(" 移动到位置 %d\n", currentPlayer->position);
                 // 掷骰子逻辑
                 printf("（此处掷骰子...）\n");
                  
                 int i = find_place(map, currentPlayer->position);
+
 
                 if(map[i].type == '0' && map[i].owner== NULL){
                     printf("此处为空地，可以购买。\n");
