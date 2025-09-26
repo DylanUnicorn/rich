@@ -1,7 +1,0 @@
-# Generated test artifacts
-artifacts/
-actual_*.txt
-checkresult.txt
-expected_direct.txt
-expected_helloworld.txt
-cmdlist_helloworld.txt

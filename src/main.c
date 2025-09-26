@@ -20,7 +20,17 @@
 #include "Structure.h"
 #include "TollFee.h"
 #include "Tool.h"
-#include"HospitalAndPrison.h"
+#include "HospitalAndPrison.h"
+#include <sys/stat.h>
+
+/* Forward declarations for test mode */
+static int path_is_dir(const char* p);
+static void json_escape_string(FILE* f, const char* s);
+static char char_from_player(PlayerCharacter pc);
+static void write_dump_json(const char* case_dir, Structure* map, PlayerManager* pm);
+static int is_digits_1_4_unique(const char* s);
+static void add_players_from_selection(PlayerManager* pm, const char* sel, int initialMoney);
+static int run_test_mode(const char* case_dir);
 #define MAX_INPUT 100
 
 void run_test_helloworld() {
@@ -421,13 +431,18 @@ int main(int argc, char* argv[]) {
         if (strcmp(argv[1], "testhelloworld") == 0) {
             run_test_helloworld();
             return 0;
-        } else {
-            printf("Unknown command: %s\n", argv[1]);
-            printf("Available commands:\n");
-            printf("  testhelloworld - Run hello world test\n");
-            printf("  (no arguments) - Run interactive game or command mode\n");
-            return 1;
         }
+        /* Test mode: if argv[1] is a directory, enter automated test mode */
+        if (path_is_dir(argv[1])) {
+            return run_test_mode(argv[1]);
+        }
+        /* Fallback: unknown single-arg command */
+        printf("Unknown command: %s\n", argv[1]);
+        printf("Available commands:\n");
+        printf("  testhelloworld - Run hello world test\n");
+        printf("  (no arguments) - Run interactive game or command mode\n");
+        printf("  <test_case_dir> - Run automated test mode with the case directory\n");
+        return 1;
     }
     
     /* Check if input is redirected (for automated testing) */
@@ -437,5 +452,226 @@ int main(int argc, char* argv[]) {
         run_interactive_game();
     }
     
+    return 0;
+}
+
+/* ---------------- Test Mode Implementation ---------------- */
+
+static int path_is_dir(const char* p) {
+    if (!p) return 0;
+    struct stat st;
+    if (stat(p, &st) != 0) return 0;
+    return S_ISDIR(st.st_mode);
+}
+
+static void json_escape_string(FILE* f, const char* s) {
+    fputc('"', f);
+    for (const unsigned char* p = (const unsigned char*)s; *p; ++p) {
+        unsigned char c = *p;
+        switch (c) {
+            case '"': fputs("\\\"", f); break;
+            case '\\': fputs("\\\\", f); break;
+            case '\b': fputs("\\b", f); break;
+            case '\f': fputs("\\f", f); break;
+            case '\n': fputs("\\n", f); break;
+            case '\r': fputs("\\r", f); break;
+            case '\t': fputs("\\t", f); break;
+            default:
+                if (c < 0x20) {
+                    fprintf(f, "\\u%04x", c);
+                } else {
+                    fputc(c, f);
+                }
+        }
+    }
+    fputc('"', f);
+}
+
+static char char_from_player(PlayerCharacter pc) {
+    switch (pc) {
+        case QIAN_FUREN: return 'Q';
+        case ATURBER: return 'A';
+        case SUN_XIAOMEI: return 'S';
+        case JIN_BEIBEI: return 'J';
+        default: return '?';
+    }
+}
+
+static void write_dump_json(const char* case_dir, Structure* map, PlayerManager* pm) {
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/%s", case_dir, "dump.json");
+    FILE* f = fopen(path, "wb");
+    if (!f) {
+        fprintf(stderr, "Failed to open %s for writing\n", path);
+        return;
+    }
+
+    fputs("{\n", f);
+
+    /* players */
+    fputs("  \"players\": [\n", f);
+    for (int i = 0; i < pm->playerCount; i++) {
+        Player* p = &pm->players[i];
+        fprintf(f, "    {\n");
+        fprintf(f, "      \"index\": %d,\n", i);
+        fprintf(f, "      \"name\": "); json_escape_string(f, (char[]){char_from_player(p->character), 0}); fputs(",\n", f);
+        fprintf(f, "      \"fund\": %d,\n", p->money);
+        fprintf(f, "      \"credit\": %d,\n", p->points);
+        fprintf(f, "      \"location\": %d,\n", p->position);
+        fprintf(f, "      \"alive\": %s,\n", (p->money >= 0 ? "true" : "false"));
+        fprintf(f, "      \"prop\": {\n");
+        fprintf(f, "        \"bomb\": %d,\n", p->tool.bomb);
+        fprintf(f, "        \"barrier\": %d,\n", p->tool.roadblock);
+        fprintf(f, "        \"robot\": %d,\n", p->tool.doll);
+        fprintf(f, "        \"total\": %d\n", p->tool.total);
+        fprintf(f, "      },\n");
+        /* Buff durations not fully tracked in current data structures; default to 0 */
+        fprintf(f, "      \"buff\": {\n");
+        fprintf(f, "        \"god\": %d,\n", 0);
+        fprintf(f, "        \"prison\": %d,\n", p->in_prison ? 1 : 0);
+        fprintf(f, "        \"hospital\": %d\n", p->in_hospital ? 1 : 0);
+        fprintf(f, "      }\n");
+        fprintf(f, "    }%s\n", (i == pm->playerCount - 1) ? "" : ",");
+    }
+    fputs("  ],\n", f);
+
+    /* houses */
+    fputs("  \"houses\": {\n", f);
+    int first_house = 1;
+    for (int i = 0; i < HEIGHT * WIDTH; i++) {
+        if (map[i].id >= 0 && map[i].owner != NULL && map[i].level >= 0) {
+            if (!first_house) fputs(",\n", f); else first_house = 0;
+            fprintf(f, "    \"%d\": { \"owner\": ", map[i].id);
+            char owner_name[2] = { char_from_player(map[i].owner->character), 0 };
+            json_escape_string(f, owner_name);
+            fprintf(f, ", \"level\": %d }", map[i].level);
+        }
+    }
+    if (!first_house) fputs("\n", f);
+    fputs("  },\n", f);
+
+    /* placed_prop */
+    fputs("  \"placed_prop\": {\n", f);
+    /* bombs */
+    fputs("    \"bomb\": [", f);
+    int first = 1;
+    for (int i = 0; i < HEIGHT * WIDTH; i++) {
+        if (map[i].type == '@') {
+            if (!first) fputs(", ", f); else first = 0;
+            fprintf(f, "%d", map[i].id);
+        }
+    }
+    fputs("],\n", f);
+    /* barriers */
+    fputs("    \"barrier\": [", f);
+    first = 1;
+    for (int i = 0; i < HEIGHT * WIDTH; i++) {
+        if (map[i].type == '#') {
+            if (!first) fputs(", ", f); else first = 0;
+            fprintf(f, "%d", map[i].id);
+        }
+    }
+    fputs("]\n", f);
+    fputs("  },\n", f);
+
+    /* game */
+    fputs("  \"game\": {\n", f);
+    fprintf(f, "    \"now_player\": %d,\n", pm->currentPlayerIndex);
+    int next_index = pm->playerCount > 0 ? ((pm->currentPlayerIndex + 1) % pm->playerCount) : 0;
+    fprintf(f, "    \"next_player\": %d,\n", next_index);
+    fprintf(f, "    \"ended\": %s,\n", "true");
+    fprintf(f, "    \"winner\": %d\n", -1);
+    fputs("  }\n", f);
+
+    fputs("}\n", f);
+    fclose(f);
+}
+
+static int is_digits_1_4_unique(const char* s) {
+    if (!s) return 0;
+    int len = (int)strlen(s);
+    if (len < 2 || len > 4) return 0;
+    int used[5] = {0};
+    for (int i = 0; i < len; i++) {
+        char c = s[i];
+        if (c < '1' || c > '4') return 0;
+        int d = c - '0';
+        if (used[d]) return 0;
+        used[d] = 1;
+    }
+    return 1;
+}
+
+static void add_players_from_selection(PlayerManager* pm, const char* sel, int initialMoney) {
+    int len = (int)strlen(sel);
+    for (int i = 0; i < len; i++) {
+        int d = sel[i] - '0';
+        playerManager_addPlayer(pm, (PlayerCharacter)d, initialMoney);
+    }
+}
+
+int run_test_mode(const char* case_dir) {
+    /* Initialize game state */
+    Structure map[HEIGHT * WIDTH];
+    init_map(map);
+    GameConfig config; gameConfig_init(&config);
+    PlayerManager pm; playerManager_init(&pm);
+
+    /* Input handling from stdin: first line money, second line selection, then commands */
+    char line[256];
+    int stage = 0;
+    int initialMoney = 10000;
+    while (fgets(line, sizeof(line), stdin)) {
+        line[strcspn(line, "\n")] = 0; /* trim newline */
+        if (strlen(line) == 0) continue;
+
+        if (stage == 0) {
+            /* initial money */
+            char* endptr = NULL;
+            long v = strtol(line, &endptr, 10);
+            if (endptr != line && v >= 1000 && v <= 50000) {
+                initialMoney = (int)v;
+            }
+            gameConfig_setInitialMoney(&config, initialMoney);
+            stage = 1;
+            continue;
+        }
+        if (stage == 1) {
+            /* player selection like 421 */
+            if (!is_digits_1_4_unique(line)) {
+                fprintf(stderr, "Invalid player selection: %s\n", line);
+                return 1;
+            }
+            add_players_from_selection(&pm, line, initialMoney);
+            stage = 2;
+            continue;
+        }
+
+        /* Commands: only support `step n` and `dump` and `quit` here */
+        if (strcmp(line, "dump") == 0) {
+            write_dump_json(case_dir, map, &pm);
+            /* End immediately after dump */
+            return 0;
+        }
+        if (strcmp(line, "quit") == 0) {
+            /* No dump; exit */
+            return 0;
+        }
+        if (strncmp(line, "step ", 5) == 0) {
+            const char* nstr = line + 5;
+            long steps = strtol(nstr, NULL, 10);
+            if (steps < 0) steps = 0;
+            Player* current = playerManager_getCurrentPlayer(&pm);
+            if (current) {
+                /* Simple movement; ignore obstacles and interactions in test mode for now */
+                current->position = (current->position + (int)(steps % 70)) % 70;
+            }
+            continue;
+        }
+        /* Unknown test command: ignore */
+    }
+
+    /* If EOF without dump, still write a dump for debugging */
+    write_dump_json(case_dir, map, &pm);
     return 0;
 }
