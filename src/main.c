@@ -352,7 +352,7 @@ void run_interactive_game() {
                 }
                 else if(map[i].owner == currentPlayer){
                     printf("此处为你拥有的地产，可以升级或出售。\n");
-                    printf("是否升级或出售此地？(u 升级 / n 不操作): ");
+                    printf("是否升级或出售此地？(u 升级 / s 出售 / n 不操作): ");
                     char choice;
                     if (scanf(" %c", &choice) != 1) {
                         // 处理输入错误
@@ -371,7 +371,7 @@ void run_interactive_game() {
                     }
                 }
                 else if(map[i].owner != NULL && map[i].owner != currentPlayer){
-                    printf("此处为%s的地产，你需要支付过路费。\n", player_getName(map[i].owner->character));
+                    printf("此处为%s的地产，", player_getName(map[i].owner->character));
                     GetTollFee(currentPlayer,&map[i],&playerManager);
                     if (playerManager_isGameWon(&playerManager)) {
                         Player* winner = playerManager_getWinner(&playerManager);
