@@ -143,23 +143,29 @@ void run_interactive_game() {
             else if (strcmp(cmd, "step") == 0) {
                 if (param != NULL) {
                     int steps = atoi(param);
+                    int is_bombed_or_blocked = 0;
                     //如果接下来遇见炸弹就被送往医院
                     for(int i = 0; i <= steps; i++){
                         int nextPos = (currentPlayer->position + i) % 70;
                         int j = find_place(map, nextPos);
                         if(map[j].type == '@'){
+                            map[j].type = '0'; // 清除炸弹
                             printf("你遇见了炸弹，被送往医院！\n");
                             InHospital(currentPlayer);
                             playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                            is_bombed_or_blocked = 1;
                             break;
                         }
                         else if(map[j].type == '#'){
+                            map[j].type = '0'; // 清除路障
                             printf("你遇见了路障，停止前进！\n");
                             currentPlayer->position = (currentPlayer->position + i) % 70;
                             playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                            is_bombed_or_blocked = 1;
                             break;
                         }
                     }
+                if (is_bombed_or_blocked) continue;
                     currentPlayer->position = (currentPlayer->position + steps) % 70; // 假设地图有70个位置
                     printf("你移动到了位置 %d\n", currentPlayer->position);
 
@@ -176,7 +182,7 @@ void run_interactive_game() {
                     }
                     while (getchar() != '\n'); // 清除输入缓冲区
                     if (choice == 'y' || choice == 'Y') {
-                        buy_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
+                        buy_land(map, currentPlayer->position, currentPlayer);
                     } 
                     else if(choice == 'n' || choice == 'N') {
                         printf("放弃购买此地。\n");
@@ -202,7 +208,7 @@ void run_interactive_game() {
                     }
                     while (getchar() != '\n'); // 清除输入缓冲区
                     if (choice == 'u' || choice == 'U') {
-                        upgrade_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
+                        upgrade_land(map, currentPlayer->position, currentPlayer);
                     } 
                     else if(choice == 'n' || choice == 'N'){
                         printf("放弃操作此地。\n");
@@ -309,22 +315,28 @@ void run_interactive_game() {
                 //Player_use_roll_dice( currentPlayer);
                 srand(time(NULL));
                 int roll = roll_dice();
+                int is_bombed_or_blocked = 0;
                 for(int i = 0; i <= roll; i++){
                     int nextPos = (currentPlayer->position + i) % 70;
                     int j = find_place(map, nextPos);
                     if(map[j].type == '@'){
+                        map[j].type = '0'; // 清除炸弹
                         printf("你遇见了炸弹，被送往医院！\n");
                         InHospital(currentPlayer);
                         playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                        is_bombed_or_blocked = 1;
                         break;
                     }
                     else if(map[j].type == '#'){
+                        map[j].type = '0'; // 清除路障
                         printf("你遇见了路障，停止前进！\n");
                         currentPlayer->position = (currentPlayer->position + j) % 70;
                         playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                        is_bombed_or_blocked = 1;
                         break;
                     }
                 }
+                if(is_bombed_or_blocked) continue;
                 printf("玩家 %s 掷出了 %d 点，\n", player_getName(currentPlayer->character), roll);
                 currentPlayer->position = (currentPlayer->position + roll) % 70; // 假设地图有70个位置
                 printf(" 移动到位置 %d\n", currentPlayer->position);
@@ -345,7 +357,7 @@ void run_interactive_game() {
                     }
                     while (getchar() != '\n'); // 清除输入缓冲区
                     if (choice == 'y' || choice == 'Y') {
-                        buy_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
+                        buy_land(map, currentPlayer->position, currentPlayer);
                     } 
                     else if(choice == 'n' || choice == 'N') {
                         printf("放弃购买此地。\n");
@@ -371,7 +383,7 @@ void run_interactive_game() {
                     }
                     while (getchar() != '\n'); // 清除输入缓冲区
                     if (choice == 'u' || choice == 'U') {
-                        upgrade_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
+                        upgrade_land(map, currentPlayer->position, currentPlayer);
                     } 
                     else if(choice == 'n' || choice == 'N'){
                         printf("放弃操作此地。\n");
