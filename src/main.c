@@ -149,18 +149,12 @@ void run_interactive_game() {
                             playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
                             break;
                         }
-                        else if(map[j].type == 'P'){
-                        printf("你遇见了监狱，停止前进！\n");
-                        currentPlayer->position = (currentPlayer->position + j) % 70;
-                        currentPlayer->in_prison = true;
-                        currentPlayer->prison_days = 2; // 监狱停留2天
-                        playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-                        break;
-                        }
                     }
                     currentPlayer->position = (currentPlayer->position + steps) % 70; // 假设地图有70个位置
                     printf("你移动到了位置 %d\n", currentPlayer->position);
+
                 int i = find_place(map, currentPlayer->position);
+
                 if(map[i].type == '0' && map[i].owner== NULL){
                     printf("此处为空地，可以购买。\n");
                     printf("是否购买此地？(y/n): ");
@@ -180,6 +174,12 @@ void run_interactive_game() {
                     else {
                         printf("错误指令，输入help寻求帮助。\n");
                     }
+                }
+                else if(map[i].type == 'P'){
+                    printf("你遇见了监狱，停止前进！\n");
+                    currentPlayer->in_prison = true;
+                    currentPlayer->prison_days = 2; // 监狱停留2天
+                    playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
                 }
                 else if(map[i].owner == currentPlayer){
                     printf("此处为你拥有的地产，可以升级或出售。\n");
@@ -314,14 +314,6 @@ void run_interactive_game() {
                         playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
                         break;
                     }
-                    else if(map[j].type == 'P'){
-                        printf("你遇见了监狱，停止前进！\n");
-                        currentPlayer->position = (currentPlayer->position + j) % 70;
-                        currentPlayer->in_prison = true;
-                        currentPlayer->prison_days = 2; // 监狱停留2天
-                        playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-                        break;
-                    }
                 }
                 printf("玩家 %s 掷出了 %d 点，\n", player_getName(currentPlayer->character), roll);
                 currentPlayer->position = (currentPlayer->position + roll) % 70; // 假设地图有70个位置
@@ -330,7 +322,6 @@ void run_interactive_game() {
                 printf("（此处掷骰子...）\n");
                  
                 int i = find_place(map, currentPlayer->position);
-
 
                 if(map[i].type == '0' && map[i].owner== NULL){
                     printf("此处为空地，可以购买。\n");
@@ -352,6 +343,12 @@ void run_interactive_game() {
                     else {
                         printf("错误指令，输入help寻求帮助。\n");
                     }
+                }
+                else if(map[i].type == 'P'){
+                    printf("你遇见了监狱，停止前进！\n");
+                    currentPlayer->in_prison = true;
+                    currentPlayer->prison_days = 2; // 监狱停留2天
+                    playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
                 }
                 else if(map[i].owner == currentPlayer){
                     printf("此处为你拥有的地产，可以升级或出售。\n");

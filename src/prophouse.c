@@ -8,6 +8,7 @@ void propHouse_init() {
     printf("2. 机器娃娃 (价格: 30点)\n");
     printf("3. 炸弹 (价格: 50点)\n");
     printf("请输入要购买的道具编号(或输入f退出): ");
+    
 }
 
 void player_getintoPropHouse(Player* currentPlayer) {
