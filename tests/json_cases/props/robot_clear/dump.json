@@ -23,8 +23,8 @@
   "houses": {
   },
   "placed_prop": {
-    "bomb": [],
-    "barrier": []
+    "bomb": [2, 7],
+    "barrier": [1, 5, 9]
   },
   "game": {
     "now_player": 0,

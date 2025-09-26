@@ -1,0 +1,6 @@
+step 5
+y
+roll
+n
+step 5
+dump

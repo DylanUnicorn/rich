@@ -3,9 +3,9 @@
     {
       "index": 0,
       "name": "Q",
-      "fund": 15000,
+      "fund": 10000,
       "credit": 0,
-      "location": 9,
+      "location": 10,
       "alive": true,
       "prop": {
         "bomb": 0,
@@ -22,7 +22,7 @@
     {
       "index": 1,
       "name": "A",
-      "fund": 15000,
+      "fund": 10000,
       "credit": 0,
       "location": 0,
       "alive": true,
