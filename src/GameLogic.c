@@ -33,8 +33,13 @@ void game_handle_cell_event(Player* player, Structure* cell, PlayerManager* play
             break;
         case 'G': // Gift House
             game_handle_gift_house(player);
+
             break;
         case 'T': // Tool Shop
+            if(player->points < 30){
+                printf("点数不足，无法进入道具屋。\n");
+                break;
+            }
             game_handle_tool_shop(player);
             break;
         default:
