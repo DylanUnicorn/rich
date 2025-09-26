@@ -72,12 +72,17 @@ void reset_all_land(Structure* map, Player* player) {
     if (map == NULL || player == NULL) return;
 
     for (int pos = 0; pos < 70; pos++) {
-        if (player->house[pos] == 1) { // If the player owns this land
-            printf("haha\n");
+        if (player->house[pos] == 1) {
             int i = find_place(map, pos);
-            map[i].owner = NULL;
-            map[i].level = -1; // Reset land level
-            player->house[pos] = 0; // Mark land as unowned
+            //printf("[reset_all_land] pos=%d, find_place=%d, before owner=%p\n", pos, i, (i>=0)?(void*)map[i].owner:NULL);
+            if (i >= 0) {
+                map[i].owner = NULL;
+                map[i].level = -1;
+                player->house[pos] = 0;
+                //printf("[reset_all_land] pos=%d 清除成功\n", pos);
+            } else {
+                //printf("[reset_all_land] pos=%d 未找到地图地块，无法清除\n", pos);
+            }
         }
     }
 }

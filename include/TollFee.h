@@ -4,7 +4,7 @@
 #include"Player.h"
 #include"Structure.h"
 
-void GetTollFee(Player *player,Structure *structure,PlayerManager *playermanager);
+void GetTollFee(Player *player,Structure *structure);
 void IBankruptcy(Player *player,PlayerManager *playermanager,Structure *map);
 
 #endif

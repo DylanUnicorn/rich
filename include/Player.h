@@ -47,7 +47,8 @@ typedef struct {
 #define MAX_PLAYERS 4
 typedef struct {
     Player players[MAX_PLAYERS];
-    int playerCount;
+    int playerCount; // 开局玩家数量
+    int playerIndex;  // 实时玩家数量
     int currentPlayerIndex;
 } PlayerManager;
 
