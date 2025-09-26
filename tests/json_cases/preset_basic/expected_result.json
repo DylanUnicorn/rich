@@ -13,5 +13,5 @@
     "1": {"owner": "Q", "level": 2}
   },
   "placed_prop": {"bomb": [7], "barrier": [12]},
-  "game": {"now_player": 1, "next_player": 0, "ended": true, "winner": -1}
+  "game": {"now_player": 1, "next_player": 0, "ended": false, "winner": -1}
 }

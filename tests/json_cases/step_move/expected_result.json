@@ -11,5 +11,5 @@
   ],
   "houses": {},
   "placed_prop": {"bomb": [], "barrier": []},
-  "game": {"now_player": 0, "next_player": 1, "ended": true, "winner": -1}
+  "game": {"now_player": 0, "next_player": 1, "ended": false, "winner": -1}
 }

@@ -8,10 +8,10 @@
       "location": 14,
       "alive": true,
       "prop": {
-        "bomb": 1,
+        "bomb": 0,
         "barrier": 0,
         "robot": 0,
-        "total": 1
+        "total": 0
       },
       "buff": {
         "god": 0,
@@ -29,7 +29,7 @@
   "game": {
     "now_player": 0,
     "next_player": 0,
-    "ended": true,
+    "ended": false,
     "winner": -1
   }
 }

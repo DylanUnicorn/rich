@@ -3,7 +3,7 @@
     {
       "index": 0,
       "name": "J",
-      "fund": 18000,
+      "fund": 17800,
       "credit": 0,
       "location": 10,
       "alive": true,
@@ -41,16 +41,17 @@
   ],
   "houses": {
     "1": { "owner": "J", "level": 1 },
-    "3": { "owner": "S", "level": 3 }
+    "3": { "owner": "S", "level": 3 },
+    "10": { "owner": "J", "level": 0 }
   },
   "placed_prop": {
     "bomb": [],
     "barrier": []
   },
   "game": {
-    "now_player": 0,
-    "next_player": 1,
-    "ended": true,
+    "now_player": 1,
+    "next_player": 0,
+    "ended": false,
     "winner": -1
   }
 }

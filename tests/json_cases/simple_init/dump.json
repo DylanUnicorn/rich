@@ -67,7 +67,7 @@
   "game": {
     "now_player": 0,
     "next_player": 1,
-    "ended": true,
+    "ended": false,
     "winner": -1
   }
 }

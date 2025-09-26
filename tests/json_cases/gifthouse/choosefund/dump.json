@@ -3,7 +3,7 @@
     {
       "index": 0,
       "name": "Q",
-      "fund": 10000,
+      "fund": 12000,
       "credit": 0,
       "location": 35,
       "alive": true,
@@ -29,7 +29,7 @@
   "game": {
     "now_player": 0,
     "next_player": 0,
-    "ended": true,
+    "ended": false,
     "winner": -1
   }
 }

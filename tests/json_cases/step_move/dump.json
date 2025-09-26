@@ -46,9 +46,9 @@
     "barrier": []
   },
   "game": {
-    "now_player": 0,
-    "next_player": 1,
-    "ended": true,
+    "now_player": 1,
+    "next_player": 0,
+    "ended": false,
     "winner": -1
   }
 }

@@ -18,6 +18,25 @@
         "prison": 0,
         "hospital": 0
       }
+    },
+    {
+      "index": 1,
+      "name": "S",
+      "fund": 7000,
+      "credit": 0,
+      "location": 5,
+      "alive": true,
+      "prop": {
+        "bomb": 0,
+        "barrier": 0,
+        "robot": 0,
+        "total": 0
+      },
+      "buff": {
+        "god": 0,
+        "prison": 0,
+        "hospital": 0
+      }
     }
   ],
   "houses": {
@@ -28,8 +47,8 @@
   },
   "game": {
     "now_player": 0,
-    "next_player": 0,
-    "ended": true,
+    "next_player": 1,
+    "ended": false,
     "winner": -1
   }
 }
