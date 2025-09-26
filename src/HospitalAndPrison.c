@@ -1,19 +1,17 @@
 #include"HospitalAndPrison.h"
 
-void InHospital(Player *player,Structure *structure){
-    if(structure->type == 'H'){
+void InHospital(Player *player){
     player->in_hospital = true;
     player->hospital_days = 3;
-    player->position = structure->id;
-    }
+    player->position = 14;
 }
 
 
-void InPrison(Player *player,Structure *structure){
-    if(structure->type == 'P'){
+void InPrison(Player *player,Structure structure){
+    if(structure.type == 'P'){
     player->in_prison = true;
     player->prison_days = 3;
-    player->position = structure->id;
+    player->position = structure.id;
     }
 }
 

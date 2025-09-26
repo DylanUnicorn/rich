@@ -19,6 +19,7 @@
 #include "Structure.h"
 #include "TollFee.h"
 #include "Tool.h"
+#include"HospitalAndPrison.h"
 #define MAX_INPUT 100
 
 void run_test_helloworld() {
@@ -94,6 +95,21 @@ void run_interactive_game() {
 
             // 这里处理命令，比如 roll, query, help, quit 等*/
             // 读取整行输入
+            if(currentPlayer->in_hospital){
+                printf("你在医院，无法进行其他操作，回车结束回合。\n");
+                currentPlayer->hospital_days--;
+                if(currentPlayer->hospital_days <= 0)
+                currentPlayer->in_hospital = false;
+                playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+            }
+            else if(currentPlayer->in_prison){
+                printf("你在监狱，无法进行其他操作，回车结束回合。\n");
+                currentPlayer->prison_days--;
+                if(currentPlayer->prison_days <= 0)
+                currentPlayer->in_prison = false;
+                playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+            }
+
             if (fgets(input, MAX_INPUT, stdin) == NULL) {
                 break;
             }
@@ -116,6 +132,22 @@ void run_interactive_game() {
             else if (strcmp(cmd, "step") == 0) {
                 if (param != NULL) {
                     int steps = atoi(param);
+                    //如果接下来遇见炸弹就被送往医院
+                    for(int i = 1; i <= steps; i++){
+                        int nextPos = (currentPlayer->position + i) % 70;
+                        int j = find_place(map, nextPos);
+                        if(map[j].type == '@'){
+                            printf("你遇见了炸弹，被送往医院！\n");
+                            InHospital(currentPlayer);
+                            break;
+                        }
+                        else if(map[j].type == '#'){
+                            printf("你遇见了路障，停止前进！\n");
+                            currentPlayer->position = (currentPlayer->position + i) % 70;
+                            playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                            break;
+                        }
+                    }
                     currentPlayer->position = (currentPlayer->position + steps) % 70; // 假设地图有70个位置
                     printf("你移动到了位置 %d\n", currentPlayer->position);
                 int i = find_place(map, currentPlayer->position);
