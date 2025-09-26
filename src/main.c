@@ -141,20 +141,17 @@ void run_interactive_game() {
                 }
                 else if(map[i].owner == currentPlayer){
                     printf("此处为你拥有的地产，可以升级或出售。\n");
-                    printf("是否升级此地？(u 升级 / s 出售 / n 不操作): ");
+                    printf("是否升级此地？(u 升级 / n 不操作): ");
                     char choice;
                     if (scanf(" %c", &choice) != 1) {
                         // 处理输入错误
-                        printf("输入错误，请输入 u, s 或 n。\n");
+                        printf("输入错误，请输入 u 或 n。\n");
                         continue;
                     }
                     while (getchar() != '\n'); // 清除输入缓冲区
                     if (choice == 'u' || choice == 'U') {
                         upgrade_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
                     } 
-                    else if (choice == 's' || choice == 'S') {
-                        sell_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
-                    }
                     else if(choice == 'n' || choice == 'N'){
                         printf("放弃操作此地。\n");
                     }
@@ -286,20 +283,17 @@ void run_interactive_game() {
                 }
                 else if(map[i].owner == currentPlayer){
                     printf("此处为你拥有的地产，可以升级或出售。\n");
-                    printf("是否升级或出售此地？(u 升级 / s 出售 / n 不操作): ");
+                    printf("是否升级或出售此地？(u 升级 / n 不操作): ");
                     char choice;
                     if (scanf(" %c", &choice) != 1) {
                         // 处理输入错误
-                        printf("输入错误，请输入 u, s 或 n。\n");
+                        printf("输入错误，请输入 u 或 n。\n");
                         continue;
                     }
                     while (getchar() != '\n'); // 清除输入缓冲区
                     if (choice == 'u' || choice == 'U') {
                         upgrade_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
                     } 
-                    else if (choice == 's' || choice == 'S') {
-                        sell_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
-                    }
                     else if(choice == 'n' || choice == 'N'){
                         printf("放弃操作此地。\n");
                     }
@@ -328,6 +322,20 @@ void run_interactive_game() {
                 
                 playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
             } 
+            else if (strcmp(cmd, "sell") == 0) {
+                if (param != NULL) {
+                    int pos = atoi(param);
+                    if(pos >= 0 && pos <= 69){
+                        sell_land(map, pos, currentPlayer);
+                    }
+                    else{
+                        printf("错误: 指令sell位置参数应在0到69之间\n");
+                    }
+                }
+                else {
+                    printf("错误: 指令sell需要指定位置\n");
+                }
+            }
             else {
                 printf("未知命令，请输入 help 查看帮助。\n");
             }

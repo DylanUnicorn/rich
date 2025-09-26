@@ -25,14 +25,16 @@ void buy_land(Structure* map, int position, Player* player) {
 void sell_land(Structure* map, int position, Player* player) {
     if (map == NULL || player == NULL || position < 0 || position >= HEIGHT * WIDTH) return;
 
-    if (map -> owner == player) { // Only the owner can sell the land
-        int sellPrice = map->money * (map->level + 1) * 2; // Selling price is twice of the purchase price
+    int i = find_place(map, position);
+    if (map[i].owner == player) { // Only the owner can sell the land
+        int sellPrice = map[i].money * (map[i].level + 1) * 2; // Selling price is twice of the purchase price
         player_setMoney(player, player_getMoney(player) + sellPrice);
-        map->owner = NULL;
-        map->level = -1; // Reset land level
+        map[i].owner = NULL;
+        map[i].level = -1; // Reset land level
         printf("%s以%d元出售了位置%d的土地。\n", player_getName(player->character), sellPrice, position);
-    } else {
-        printf("无法出售。\n");
+    }
+    else {
+        printf("不是你的地产，你无法出售。\n");
     }
 }
 
