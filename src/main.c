@@ -497,6 +497,9 @@ static char char_from_player(PlayerCharacter pc) {
     }
 }
 
+static int g_test_ended_flag = 1; /* default ended after dump */
+static int g_test_winner_id = -1;
+
 static void write_dump_json(const char* case_dir, Structure* map, PlayerManager* pm) {
     char path[1024];
     snprintf(path, sizeof(path), "%s/%s", case_dir, "dump.json");
@@ -526,11 +529,11 @@ static void write_dump_json(const char* case_dir, Structure* map, PlayerManager*
         fprintf(f, "        \"total\": %d\n", p->tool.total);
         fprintf(f, "      },\n");
         /* Buff durations not fully tracked in current data structures; default to 0 */
-        fprintf(f, "      \"buff\": {\n");
-        fprintf(f, "        \"god\": %d,\n", 0);
-        fprintf(f, "        \"prison\": %d,\n", p->in_prison ? 1 : 0);
-        fprintf(f, "        \"hospital\": %d\n", p->in_hospital ? 1 : 0);
-        fprintf(f, "      }\n");
+    fprintf(f, "      \"buff\": {\n");
+    fprintf(f, "        \"god\": %d,\n", p->god_bless_days);
+    fprintf(f, "        \"prison\": %d,\n", p->prison_days);
+    fprintf(f, "        \"hospital\": %d\n", p->hospital_days);
+    fprintf(f, "      }\n");
         fprintf(f, "    }%s\n", (i == pm->playerCount - 1) ? "" : ",");
     }
     fputs("  ],\n", f);
@@ -579,8 +582,8 @@ static void write_dump_json(const char* case_dir, Structure* map, PlayerManager*
     fprintf(f, "    \"now_player\": %d,\n", pm->currentPlayerIndex);
     int next_index = pm->playerCount > 0 ? ((pm->currentPlayerIndex + 1) % pm->playerCount) : 0;
     fprintf(f, "    \"next_player\": %d,\n", next_index);
-    fprintf(f, "    \"ended\": %s,\n", "true");
-    fprintf(f, "    \"winner\": %d\n", -1);
+    fprintf(f, "    \"ended\": %s,\n", g_test_ended_flag ? "true" : "false");
+    fprintf(f, "    \"winner\": %d\n", g_test_winner_id);
     fputs("  }\n", f);
 
     fputs("}\n", f);
@@ -610,6 +613,219 @@ static void add_players_from_selection(PlayerManager* pm, const char* sel, int i
     }
 }
 
+static char* read_file_all(const char* path, long* out_len) {
+    FILE* f = fopen(path, "rb");
+    if (!f) return NULL;
+    fseek(f, 0, SEEK_END);
+    long n = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    char* buf = (char*)malloc((size_t)n + 1);
+    if (!buf) { fclose(f); return NULL; }
+    if (fread(buf, 1, (size_t)n, f) != (size_t)n) { fclose(f); free(buf); return NULL; }
+    buf[n] = '\0';
+    fclose(f);
+    if (out_len) *out_len = n;
+    return buf;
+}
+
+static int parse_int_in(const char* start, const char* end, const char* key, int defval) {
+    if (!start) return defval;
+    char pattern[128];
+    snprintf(pattern, sizeof(pattern), "\"%s\"", key);
+    const char* p = start;
+    while (p && p < end) {
+        const char* k = strstr(p, pattern);
+        if (!k || k >= end) break;
+        const char* colon = strchr(k, ':');
+        if (!colon || colon >= end) break;
+        long v = strtol(colon + 1, NULL, 10);
+        return (int)v;
+    }
+    return defval;
+}
+
+static int parse_str_char_in(const char* start, const char* end, const char* key, char defchar) {
+    char pattern[128];
+    snprintf(pattern, sizeof(pattern), "\"%s\"", key);
+    const char* k = strstr(start, pattern);
+    if (!k || k >= end) return defchar;
+    const char* colon = strchr(k, ':');
+    if (!colon || colon >= end) return defchar;
+    const char* q1 = strchr(colon, '"');
+    if (!q1 || q1 >= end) return defchar;
+    const char* q2 = strchr(q1 + 1, '"');
+    if (!q2 || q2 > end) return defchar;
+    if (q2 > q1 + 1) return *(q1 + 1);
+    return defchar;
+}
+
+static PlayerCharacter pc_from_char(char c) {
+    switch (c) {
+        case 'Q': return QIAN_FUREN;
+        case 'A': return ATURBER;
+        case 'S': return SUN_XIAOMEI;
+        case 'J': return JIN_BEIBEI;
+        default: return QIAN_FUREN;
+    }
+}
+
+static void load_preset(const char* json, Structure* map, PlayerManager* pm) {
+    const char* players = strstr(json, "\"players\"");
+    if (players) {
+        const char* lb = strchr(players, '[');
+        const char* rb = lb ? strchr(lb, ']') : NULL;
+        if (lb && rb && rb > lb) {
+            const char* p = lb;
+            int max_index = -1;
+            while (1) {
+                const char* ob = strchr(p, '{');
+                if (!ob || ob >= rb) break;
+                int braces = 1;
+                const char* q = ob + 1;
+                while (q < rb && braces > 0) {
+                    if (*q == '{') braces++; else if (*q == '}') braces--; q++;
+                }
+                const char* oe = q; /* one past '}' */
+                int idx = parse_int_in(ob, oe, "index", -1);
+                if (idx >= 0 && idx < MAX_PLAYERS) {
+                    if (idx + 1 > pm->playerCount) pm->playerCount = idx + 1;
+                    if (idx > max_index) max_index = idx;
+                    Player* pl = &pm->players[idx];
+                    char namec = parse_str_char_in(ob, oe, "name", 'Q');
+                    pl->character = pc_from_char(namec);
+                    pl->money = parse_int_in(ob, oe, "fund", pl->money);
+                    pl->points = parse_int_in(ob, oe, "credit", pl->points);
+                    pl->position = parse_int_in(ob, oe, "location", pl->position);
+                    /* props */
+                    pl->tool.bomb = parse_int_in(ob, oe, "bomb", pl->tool.bomb);
+                    pl->tool.roadblock = parse_int_in(ob, oe, "barrier", pl->tool.roadblock);
+                    pl->tool.doll = parse_int_in(ob, oe, "robot", pl->tool.doll);
+                    pl->tool.total = parse_int_in(ob, oe, "total", pl->tool.total);
+                    /* buffs (read from nested buff object keys) */
+                    int god_turns = parse_int_in(ob, oe, "god", 0);
+                    int prison_turns = parse_int_in(ob, oe, "prison", 0);
+                    int hospital_turns = parse_int_in(ob, oe, "hospital", 0);
+                    pl->god_bless_days = god_turns;
+                    pl->prison_days = prison_turns;
+                    pl->hospital_days = hospital_turns;
+                    pl->god = god_turns > 0;
+                    pl->in_prison = prison_turns > 0;
+                    pl->in_hospital = hospital_turns > 0;
+                    /* guard in case fields exist */
+                    #ifdef __GNUC__
+                    /* best-effort: some builds have these fields */
+                    extern void __attribute__((weak)) _ignore(void*);
+                    #endif
+                    /* If fields exist, set them via macros or direct; otherwise ignore */
+                    /* Not strictly portable; kept simple */
+                }
+                p = oe;
+            }
+        }
+    }
+
+    /* placed_prop */
+    const char* pprop = strstr(json, "\"placed_prop\"");
+    if (pprop) {
+        const char* bombk = strstr(pprop, "\"bomb\"");
+        if (bombk) {
+            const char* lb = strchr(bombk, '[');
+            const char* rb = lb ? strchr(lb, ']') : NULL;
+            if (lb && rb && rb > lb) {
+                const char* s = lb + 1;
+                while (s < rb) {
+                    char* endptr;
+                    long v = strtol(s, &endptr, 10);
+                    if (endptr == s) { s++; continue; }
+                    int id = (int)v;
+                    int idx = find_place(map, id);
+                    if (idx >= 0) map[idx].type = '@';
+                    s = endptr;
+                }
+            }
+        }
+        const char* bark = strstr(pprop, "\"barrier\"");
+        if (bark) {
+            const char* lb = strchr(bark, '[');
+            const char* rb = lb ? strchr(lb, ']') : NULL;
+            if (lb && rb && rb > lb) {
+                const char* s = lb + 1;
+                while (s < rb) {
+                    char* endptr;
+                    long v = strtol(s, &endptr, 10);
+                    if (endptr == s) { s++; continue; }
+                    int id = (int)v;
+                    int idx = find_place(map, id);
+                    if (idx >= 0) map[idx].type = '#';
+                    s = endptr;
+                }
+            }
+        }
+    }
+
+    /* houses */
+    const char* houses = strstr(json, "\"houses\"");
+    if (houses) {
+        const char* lb = strchr(houses, '{');
+        const char* rb = NULL;
+        if (lb) {
+            int depth = 1; const char* p = lb + 1;
+            while (*p) {
+                if (*p == '{') depth++;
+                else if (*p == '}') { depth--; if (depth == 0) { rb = p; break; } }
+                p++;
+            }
+        }
+        if (lb && rb && rb > lb) {
+            const char* s = lb + 1;
+            while (s < rb) {
+                while (s < rb && *s != '"') s++;
+                if (s >= rb) break;
+                const char* q1 = s + 1;
+                const char* q2 = strchr(q1, '"');
+                if (!q2 || q2 >= rb) break;
+                int id = atoi(q1);
+                const char* colon = strchr(q2, ':');
+                if (!colon || colon >= rb) break;
+                const char* ob = strchr(colon, '{');
+                if (!ob || ob >= rb) { s = q2 + 1; continue; }
+                int braces = 1; const char* p2 = ob + 1;
+                while (p2 < rb && braces > 0) { if (*p2 == '{') braces++; else if (*p2 == '}') braces--; p2++; }
+                const char* oe = p2; /* one past */
+                char ownerc = parse_str_char_in(ob, oe, "owner", 'Q');
+                int level = parse_int_in(ob, oe, "level", 0);
+                int mi = find_place(map, id);
+                if (mi >= 0) {
+                    map[mi].level = level;
+                    /* set owner pointer */
+                    for (int i = 0; i < pm->playerCount; i++) {
+                        if (char_from_player(pm->players[i].character) == ownerc) {
+                            map[mi].owner = &pm->players[i];
+                            break;
+                        }
+                    }
+                }
+                s = oe + 1;
+            }
+        }
+    }
+
+    /* game */
+    const char* game = strstr(json, "\"game\"");
+    if (game) {
+        const char* lb = strchr(game, '{');
+        const char* rb = lb ? strchr(lb, '}') : NULL;
+        if (lb && rb && rb > lb) {
+            int nowp = parse_int_in(lb, rb, "now_player", pm->currentPlayerIndex);
+            if (nowp >= 0 && nowp < pm->playerCount) pm->currentPlayerIndex = nowp;
+            int ended = parse_int_in(lb, rb, "ended", g_test_ended_flag);
+            int winner = parse_int_in(lb, rb, "winner", g_test_winner_id);
+            g_test_ended_flag = ended ? 1 : 0;
+            g_test_winner_id = winner;
+        }
+    }
+}
+
 int run_test_mode(const char* case_dir) {
     /* Initialize game state */
     Structure map[HEIGHT * WIDTH];
@@ -617,7 +833,18 @@ int run_test_mode(const char* case_dir) {
     GameConfig config; gameConfig_init(&config);
     PlayerManager pm; playerManager_init(&pm);
 
-    /* Input handling from stdin: first line money, second line selection, then commands */
+    /* If preset.json exists, load it and skip money/selection from stdin */
+    int use_preset = 0;
+    char preset_path[1024];
+    snprintf(preset_path, sizeof(preset_path), "%s/%s", case_dir, "preset.json");
+    long preset_len = 0; char* preset_json = read_file_all(preset_path, &preset_len);
+    if (preset_json) {
+        use_preset = 1;
+        load_preset(preset_json, map, &pm);
+        free(preset_json);
+    }
+
+    /* Input handling from stdin: if no preset, first line money, second line selection, then commands */
     char line[256];
     int stage = 0;
     int initialMoney = 10000;
@@ -625,7 +852,7 @@ int run_test_mode(const char* case_dir) {
         line[strcspn(line, "\n")] = 0; /* trim newline */
         if (strlen(line) == 0) continue;
 
-        if (stage == 0) {
+        if (!use_preset && stage == 0) {
             /* initial money */
             char* endptr = NULL;
             long v = strtol(line, &endptr, 10);
@@ -636,7 +863,7 @@ int run_test_mode(const char* case_dir) {
             stage = 1;
             continue;
         }
-        if (stage == 1) {
+        if (!use_preset && stage == 1) {
             /* player selection like 421 */
             if (!is_digits_1_4_unique(line)) {
                 fprintf(stderr, "Invalid player selection: %s\n", line);
@@ -647,7 +874,7 @@ int run_test_mode(const char* case_dir) {
             continue;
         }
 
-        /* Commands: only support `step n` and `dump` and `quit` here */
+        /* Commands supported in test mode: step n, dump, quit, block n, bomb n, robot */
         if (strcmp(line, "dump") == 0) {
             write_dump_json(case_dir, map, &pm);
             /* End immediately after dump */
@@ -663,8 +890,88 @@ int run_test_mode(const char* case_dir) {
             if (steps < 0) steps = 0;
             Player* current = playerManager_getCurrentPlayer(&pm);
             if (current) {
-                /* Simple movement; ignore obstacles and interactions in test mode for now */
-                current->position = (current->position + (int)(steps % 70)) % 70;
+                /* If in hospital or prison, skip movement and decrement counters */
+                if (current->hospital_days > 0 || current->in_hospital) {
+                    if (current->hospital_days > 0) current->hospital_days -= 1;
+                    if (current->hospital_days <= 0) { current->hospital_days = 0; current->in_hospital = false; }
+                } else if (current->prison_days > 0 || current->in_prison) {
+                    if (current->prison_days > 0) current->prison_days -= 1;
+                    if (current->prison_days <= 0) { current->prison_days = 0; current->in_prison = false; }
+                } else {
+                    /* Step-by-step movement with obstacle handling */
+                    int pos = current->position;
+                    int stopped = 0;
+                    for (long d = 1; d <= steps; ++d) {
+                        int nextPos = (pos + 1) % 70;
+                        int idx = find_place(map, nextPos);
+                        if (idx >= 0) {
+                            if (map[idx].type == '@') {
+                                /* hit a bomb: hospitalized and consume bomb */
+                                InHospital(current);
+                                map[idx].type = '0';
+                                pos = current->position; /* hospital sets absolute position */
+                                stopped = 1;
+                                break;
+                            } else if (map[idx].type == '#') {
+                                /* barrier: stop at barrier tile */
+                                pos = nextPos;
+                                stopped = 1;
+                                break;
+                            } else {
+                                pos = nextPos;
+                            }
+                        } else {
+                            pos = nextPos;
+                        }
+                    }
+                    current->position = pos;
+                    if (!stopped) {
+                        /* If landed on prison tile, go to prison (simulate landing effect) */
+                        int idx2 = find_place(map, current->position);
+                        if (idx2 >= 0 && map[idx2].type == 'P') {
+                            InPrison(current, map[idx2]);
+                        }
+                    }
+                }
+            }
+            continue;
+        }
+        if (strncmp(line, "block ", 6) == 0) {
+            const char* nstr = line + 6;
+            long off = strtol(nstr, NULL, 10);
+            if (off >= -10 && off <= 10 && off != 0) {
+                Player* current = playerManager_getCurrentPlayer(&pm);
+                if (current) {
+                    int target = (current->position + (int)off) % 70; if (target < 0) target += 70;
+                    int idx = find_place(map, target);
+                    if (idx >= 0) map[idx].type = '#';
+                }
+            }
+            continue;
+        }
+        if (strncmp(line, "bomb ", 5) == 0) {
+            const char* nstr = line + 5;
+            long off = strtol(nstr, NULL, 10);
+            if (off >= -10 && off <= 10 && off != 0) {
+                Player* current = playerManager_getCurrentPlayer(&pm);
+                if (current) {
+                    int target = (current->position + (int)off) % 70; if (target < 0) target += 70;
+                    int idx = find_place(map, target);
+                    if (idx >= 0) map[idx].type = '@';
+                }
+            }
+            continue;
+        }
+        if (strcmp(line, "robot") == 0) {
+            Player* current = playerManager_getCurrentPlayer(&pm);
+            if (current) {
+                for (int d = 1; d <= 10; d++) {
+                    int pos = (current->position + d) % 70; if (pos < 0) pos += 70;
+                    int idx = find_place(map, pos);
+                    if (idx >= 0 && (map[idx].type == '@' || map[idx].type == '#')) {
+                        map[idx].type = '0';
+                    }
+                }
             }
             continue;
         }

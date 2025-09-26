@@ -3,6 +3,7 @@ import json
 import subprocess
 import sys
 import os
+from typing import List
 
 def load_json(path):
     with open(path, 'r', encoding='utf-8') as f:
@@ -46,6 +47,13 @@ def run_case(game_exe, case_dir):
         print("  expect: ", json.dumps(expected, ensure_ascii=False, indent=2)[:400])
         return False
 
+def discover_case_dirs(root: str) -> List[str]:
+    found = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        if 'input.txt' in filenames and 'expected_result.json' in filenames:
+            found.append(dirpath)
+    return sorted(found)
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: runner.py <game_exe> [cases_dir]")
@@ -56,16 +64,29 @@ def main():
         print(f"Cases dir not found: {cases_root}")
         return 2
 
-    case_dirs = [os.path.join(cases_root, d) for d in os.listdir(cases_root) if os.path.isdir(os.path.join(cases_root, d))]
+    case_dirs = discover_case_dirs(cases_root)
     passed = 0
     total = 0
+    # stats by module (top-level folder under cases_root)
+    per_module = {}
     for c in sorted(case_dirs):
+        rel = os.path.relpath(c, cases_root)
+        parts = rel.split(os.sep)
+        module = parts[0] if len(parts) > 1 else "_root"
+        if module not in per_module:
+            per_module[module] = {"pass": 0, "total": 0}
         res = run_case(game_exe, c)
         if res is None:
             continue
         total += 1
+        per_module[module]["total"] += 1
         if res:
             passed += 1
+            per_module[module]["pass"] += 1
+    print("Module stats:")
+    for m in sorted(per_module.keys()):
+        s = per_module[m]
+        print(f"  {m}: {s['pass']}/{s['total']} passed")
     print(f"Summary: {passed}/{total} passed")
     return 0 if passed == total else 1
 

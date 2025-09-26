@@ -1,0 +1,5 @@
+10000
+12
+bomb 2
+step 5
+dump

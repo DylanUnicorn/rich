@@ -34,7 +34,7 @@ void PrisonDayReduceOne(Player *player){//每回合检测是否在监狱,请勿�
     if(player->prison_days>0){
         player->prison_days -= 1;
         if(player->prison_days == 0){
-            player->prison_days = false;
+            player->in_prison = false;
         }
     }
 }

@@ -39,6 +39,10 @@ void game_handle_cell_event(Player* player, Structure* cell, PlayerManager* play
             if(player->points < 30){
                 printf("点数不足，无法进入道具屋。\n");
                 break;
+                if(player->points < 30 ){
+                    printf("点数不足，无法进入道具屋。\n");
+                    break;
+                }
             }
             game_handle_tool_shop(player);
             break;

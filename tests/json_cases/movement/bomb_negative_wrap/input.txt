@@ -1,0 +1,3 @@
+bomb -2
+step 70
+dump

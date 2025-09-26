@@ -44,6 +44,11 @@ void player_getintoPropHouse(Player* currentPlayer) {
             else
             {
                 printf("点数不足，无法购买路障。\n");
+                if(currentPlayer->points<30){
+                    printf("您的点数不足，无法购买任何道具，建议您先退出道具屋。\n");
+                    getchar();
+                    break;
+                }
             }
         } else if (choice == '2') {
             if (currentPlayer->points >= 30 && currentPlayer->tool.total < 10) {
@@ -58,6 +63,11 @@ void player_getintoPropHouse(Player* currentPlayer) {
             else
             {
                 printf("点数不足，无法购买路障。\n");
+                if(currentPlayer->points<30){
+                    printf("您的点数不足，无法购买任何道具，建议您先退出道具屋。\n");
+                    getchar();
+                    break;
+                }
             }
         } else if (choice == '3') {
             if (currentPlayer->points >= 50 && currentPlayer->tool.total < 10) {
@@ -72,6 +82,12 @@ void player_getintoPropHouse(Player* currentPlayer) {
             else
             {
                 printf("点数不足，无法购买路障。\n");
+                if(currentPlayer->points<30){
+                    printf("您的点数不足，无法购买任何道具，建议您先退出道具屋。\n");
+                    /// 提前接受一个enter
+                    getchar();
+                    break;
+                }
             }
         } else {
             printf("无效选择，请重新选择。\n");  

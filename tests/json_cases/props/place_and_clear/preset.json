@@ -1,0 +1,10 @@
+{
+  "players": [
+    {"index": 0, "name": "Q", "fund": 10000, "credit": 50, "location": 0,
+     "prop": {"bomb": 1, "barrier": 1, "robot": 1, "total": 3},
+     "buff": {"god": 0, "prison": 0, "hospital": 0}
+    }
+  ],
+  "placed_prop": {"bomb": [], "barrier": []},
+  "game": {"now_player": 0}
+}
