@@ -10,6 +10,7 @@ typedef struct {
     char type;//Hospital/Prison/Magic/Gold...
     int level;//当前地产等级
     int money;//地产基础价格
+    int points;//地产基础点数
     ToolType tool;//地块被放置道具
 } Structure;
 

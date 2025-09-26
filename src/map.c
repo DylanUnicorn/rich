@@ -70,6 +70,30 @@ void init_map(Structure* map){
             map[i * WIDTH + j].level = -1; // Initial land level
         }
     }
+
+    for (int i = 0; i < HEIGHT * WIDTH; i++) { //矿地点数初始化
+        if (map[i].id == 69) {
+            map[i].points = 20;
+        }
+        else if (map[i].id == 68){
+            map[i].points = 80;
+        }
+        else if (map[i].id == 67){
+            map[i].points = 100;
+        }
+        else if (map[i].id == 66){
+            map[i].points = 40;
+        }
+        else if (map[i].id == 65){
+            map[i].points = 80;
+        }
+        else if (map[i].id == 64){
+            map[i].points = 60;
+        }
+        else {
+            map[i].points = 0; // Non-land tiles have 0 points
+        }
+    }
 }
 
 void print_map(Structure* map, PlayerManager* playerManager) {
@@ -120,7 +144,7 @@ void print_map(Structure* map, PlayerManager* playerManager) {
                         break;  // 找到一个玩家后跳出循环
                     }
                 }
-                if (!playerOnTile) {
+                if (!playerOnTile) { 
                     // 如果没有玩家在该地块上，打印地块类型
                     printf("%s%d%s ", ui_get_player_color(map[i * WIDTH + j].owner->character), 
                        map[i * WIDTH + j].level, COLOR_RESET); 
