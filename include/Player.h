@@ -35,9 +35,9 @@ typedef struct {
     int prison_days;        //服刑天数
     int points_multiplier;  //点数倍数（1或2）
     int god_bless_days;     //倍数剩余天数
-    bool active;            //标志是否破产 
+    bool bankruptcy;        //标志是否破产 
     bool god;               //标志是否财神附体
-    int house[100];         //当前拥有的房产编号
+    int house[70];          //当前拥有的房产编号
     Tool tool;              //当前拥有的道具
 } Player;
 

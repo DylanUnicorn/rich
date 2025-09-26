@@ -99,6 +99,11 @@ void run_interactive_game() {
         while (1) {
             Player* currentPlayer = playerManager_getCurrentPlayer(&playerManager);
             if (currentPlayer == NULL) break;
+            if(currentPlayer->bankruptcy == true){
+                printf("%s 已破产，跳过此回合。\n", player_getName(currentPlayer->character));
+                playerManager_nextPlayer(&playerManager);
+                continue;
+            }
             print_map(map, &playerManager);
 
             // 显示带颜色的提示符
@@ -218,7 +223,7 @@ void run_interactive_game() {
                     }
                 }
                 else if(map[i].owner != NULL && map[i].owner != currentPlayer){
-                    printf("此处为%s的地产，你需要支付过路费。\n", player_getName(map[i].owner->character));
+                    printf("此处为%s的地产\n", player_getName(map[i].owner->character));
                     GetTollFee(currentPlayer,&map[i],&playerManager);
                     if (playerManager_isGameWon(&playerManager)) {
                         Player* winner = playerManager_getWinner(&playerManager);
@@ -232,7 +237,7 @@ void run_interactive_game() {
                     }
                 }
                 else{
-                    printf("此处为特殊地块，触发相应事件。\n");
+                    //printf("此处为特殊地块，触发相应事件。\n");
                     game_handle_cell_event(currentPlayer, &map[i], &playerManager);
                     //trigger_special_tile_event(map, currentPlayer);
                 } 
@@ -243,7 +248,7 @@ void run_interactive_game() {
             else if (strcmp(cmd, "help") == 0) {
                 ui_display_help();
             }//////////////////////////////////////////////////////////////////////////////////////////
-            else if (strcmp(cmd, "bolck") == 0) {
+            else if (strcmp(cmd, "block") == 0) {
                 if (param != NULL) {
                     int blocks = atoi(param);
                     if(blocks >= -10 && blocks <= 10 && blocks != 0){
@@ -310,6 +315,14 @@ void run_interactive_game() {
                 // 显示当前玩家资产
                 printf("资金：%d，点数：%d，位置：%d\n", 
                     currentPlayer->money, currentPlayer->points, currentPlayer->position);
+                printf("您的地产位置：");
+                for(int i = 0; i < 70; i++){
+                    if(currentPlayer->house[i] == 1)
+                        printf("%d ", i);
+                }
+                printf("\n");
+                printf("道具：炸弹 %d 个，路障 %d 个，机器人 %d 个\n", 
+                    currentPlayer->tool.bomb, currentPlayer->tool.roadblock, currentPlayer->tool.doll);
             }
             else if (strcmp(cmd, "roll") == 0) {
                 //Player_use_roll_dice( currentPlayer);
@@ -407,7 +420,7 @@ void run_interactive_game() {
                     }
                 }
                 else{
-                    printf("此处为特殊地块，触发相应事件。\n");
+                    //printf("此处为特殊地块，触发相应事件。\n");
                     game_handle_cell_event(currentPlayer, &map[i], &playerManager);
                 }
                 

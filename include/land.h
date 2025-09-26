@@ -6,5 +6,6 @@
 void buy_land(Structure* map, int position, Player* player);
 void sell_land(Structure* map, int position, Player* player);
 void upgrade_land(Structure* map, int position, Player* player);
+void reset_all_land(Structure* map, Player* player);
 
 #endif

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "land.h"
 #include "map.h"
-
+#include "Player.h"
 
 void buy_land(Structure* map, int position, Player* player) {
     if (map == NULL || player == NULL || position < 0 || position >= HEIGHT * WIDTH) return;
@@ -14,6 +14,7 @@ void buy_land(Structure* map, int position, Player* player) {
             player_setMoney(player, player_getMoney(player) - map[i].money);
             map[i].owner = player;
             map[i].level = 0; // Initial land level
+            player->house[position] = 1; // Mark land as owned by player
             printf("%s以%d元购买了位置%d的土地。\n", player_getName(player->character), map[i].money, position);
         }
         else {
@@ -34,6 +35,7 @@ void sell_land(Structure* map, int position, Player* player) {
         player_setMoney(player, player_getMoney(player) + sellPrice);
         map[i].owner = NULL;
         map[i].level = -1; // Reset land level
+        player->house[position] = 0;
         printf("%s以%d元出售了位置%d的土地。\n", player_getName(player->character), sellPrice, position);
     }
     else {
@@ -47,7 +49,7 @@ void upgrade_land(Structure* map, int position, Player* player) {
     int i = find_place(map, position);
     if (map[i].owner == player) { // Only the owner can upgrade the land
         if (map[i].level < MAX_LEVEL) {
-            int upgradeCost = map[i].money / 2 * (map[i].level + 1); // Upgrade cost increases with level
+            int upgradeCost = map[i].money ; // Upgrade cost increases with level
             if (player_getMoney(player) >= upgradeCost) {
                 player_setMoney(player, player_getMoney(player) - upgradeCost);
                 map[i].level++;
@@ -63,5 +65,19 @@ void upgrade_land(Structure* map, int position, Player* player) {
     }
     else {
         printf("无法升级。\n");
+    }
+}
+
+void reset_all_land(Structure* map, Player* player) {
+    if (map == NULL || player == NULL) return;
+
+    for (int pos = 0; pos < 70; pos++) {
+        if (player->house[pos] == 1) { // If the player owns this land
+            printf("haha\n");
+            int i = find_place(map, pos);
+            map[i].owner = NULL;
+            map[i].level = -1; // Reset land level
+            player->house[pos] = 0; // Mark land as unowned
+        }
     }
 }

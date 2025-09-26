@@ -117,7 +117,7 @@ void print_map(Structure* map, PlayerManager* playerManager) {
                 for (int p = 0; p < playerManager->playerCount; p++) {
                     Player* player = &playerManager->players[p];
                     // 如果其他玩家在该地块上，显示其他玩家的位置和对应字母
-                    if (map[i * WIDTH + j].id == player->position) {
+                    if (map[i * WIDTH + j].id == player->position && player->bankruptcy == false ) {
                         printf("%s%c%s ", ui_get_player_color(player->character), 
                                player_getColorCode(player->character), COLOR_RESET);
                         playerOnTile = true;
@@ -130,14 +130,14 @@ void print_map(Structure* map, PlayerManager* playerManager) {
                 }
             }
             else {
-                // 如果该地块有主人且当前玩家没有站在该地块，显示地产主人的颜色和等级
+                // 
                 bool playerOnTile = false;
                 // 遍历其他玩家，检查是否有其他玩家站在该地块上
                 for (int p = 0; p < playerManager->playerCount; p++) {
                     Player* player = &playerManager->players[p];
 
                     // 如果其他玩家在该地块上，显示其他玩家的位置和对应字母
-                    if (map[i * WIDTH + j].id == player->position) {
+                    if (map[i * WIDTH + j].id == player->position && player->bankruptcy == false ) {
                         printf("%s%c%s ", ui_get_player_color(player->character), 
                                player_getColorCode(player->character), COLOR_RESET);
                         playerOnTile = true;
