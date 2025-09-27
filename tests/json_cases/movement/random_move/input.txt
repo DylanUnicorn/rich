@@ -1,6 +1,9 @@
 step 70
+n
 step 70
+n
 step 7000
+n
 step 69
 step 1
 n

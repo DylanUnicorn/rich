@@ -11,7 +11,7 @@
         "bomb": 0,
         "barrier": 3,
         "robot": 4,
-        "total": 0
+        "total": 7
       },
       "buff":{
         "god": 0,
