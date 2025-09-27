@@ -240,7 +240,7 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
         else if (strcmp(cmd, "help") == 0) {
             ui_display_help();
         }
-        else if (strcmp(cmd, "block") == 0 || strcmp(cmd, "bolck") == 0) {
+        else if (strcmp(cmd, "block") == 0) {
             if (param != NULL) {
                 int offset = atoi(param);
                 if(offset >= -10 && offset <= 10 && offset != 0){

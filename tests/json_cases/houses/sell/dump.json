@@ -3,7 +3,7 @@
     {
       "index": 0,
       "name": "Q",
-      "fund": 10000,
+      "fund": 11600,
       "credit": 0,
       "location": 10,
       "alive": true,
@@ -40,7 +40,6 @@
     }
   ],
   "houses": {
-    "5": { "owner": "Q", "level": 3 }
   },
   "placed_prop": {
     "bomb": [],
