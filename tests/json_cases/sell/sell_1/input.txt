@@ -1,0 +1,9 @@
+sell 1
+step 0
+sell 2
+step 0
+sell 3
+step 0
+sell 4
+step 0
+dump

@@ -32,6 +32,28 @@ void god_disappear(Structure* map, int* god_pos, int* god_turn) {
     if (*god_pos != -1) {
         printf("财神消失了！位置：%d\n", *god_pos);
         map[find_place(map, *god_pos)].tool = 0;
+        if(map[find_place(map, *god_pos)].id == 0 ){
+            map[find_place(map, *god_pos)].type = 'S'; // 恢复为开始
+        }
+        else if(map[find_place(map, *god_pos)].id == 14 || map[find_place(map, *god_pos)].id == 63 || 
+                map[find_place(map, *god_pos)].id == 49){
+            map[find_place(map, *god_pos)].type = 'P'; // 恢复为公园
+        }
+        else if(map[find_place(map, *god_pos)].id == 35){
+            map[find_place(map, *god_pos)].type = 'G'; // 恢复为礼品屋
+        }
+        else if(map[find_place(map, *god_pos)].id == 28){
+            map[find_place(map, *god_pos)].type = 'T'; // 恢复为道具屋
+        }
+        else if(map[find_place(map, *god_pos)].id == 64 || map[find_place(map, *god_pos)].id == 65 || 
+                map[find_place(map, *god_pos)].id == 66 || map[find_place(map, *god_pos)].id == 67 || 
+                map[find_place(map, *god_pos)].id == 68 || map[find_place(map, *god_pos)].id == 69){
+            map[find_place(map, *god_pos)].type = '$'; // 恢复为矿地
+        }
+        else{
+            map[find_place(map, *god_pos)].type = '0'; // 恢复为普通地块
+            
+        }
         *god_pos = -1;
         *god_turn = 0;
     }
@@ -58,6 +80,7 @@ void god_refresh(Structure* map, PlayerManager* pm, int* god_pos, int* god_turn,
     }
     *god_pos = new_god_pos;
     map[find_place(map, *god_pos)].tool = 1;
+    map[find_place(map, *god_pos)].type = 'F'; // 'F'表示财神位置
     printf("财神已出现，位置 %d ！[DEBUG] tool已设为1\n", *god_pos);
     *game_turns = 0;
     *god_turn = 1;
