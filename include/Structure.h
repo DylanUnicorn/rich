@@ -14,4 +14,12 @@ typedef struct {
     ToolType tool;//地块被放置道具
 } Structure;
 
+typedef struct {
+    bool god;           //是否财神附体
+    int god_turn;      //财神出现的回合数
+    int god_pos;       //财神位置
+    int god_appear_turn; //财神出现的回合数
+} God;
+
+
 #endif

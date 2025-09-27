@@ -49,6 +49,11 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
     playerManager_init(&playerManager);
 
     int use_preset = 0;
+    int game_turns = 1;
+    bool god_used = false;//标志财神是否被使用
+    int god_turn = 0;//记录财神出现的回合数
+    int god_pos = -1;//记录财神位置 且god_pos = -1表示未出现
+
     if (is_test_mode && case_dir) {
         char preset_path[1024];
         snprintf(preset_path, sizeof(preset_path), "%s/%s", case_dir, "preset.json");
@@ -96,6 +101,7 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
 
     // 游戏主循环
     while (1) {
+        
         Player* currentPlayer = playerManager_getCurrentPlayer(&playerManager);
         if (currentPlayer == NULL) break;
         
@@ -230,11 +236,14 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     }
                 }
                 else{
-                    printf("此处为特殊地块，触发相应事件。\n");
                     game_handle_cell_event(currentPlayer, &map[i], &playerManager);
                 }
                 if (!turn_advanced) {
                     playerManager_nextPlayer(&playerManager);
+            if (playerManager.currentPlayerIndex == 0) {
+                game_handle_turn(&god_pos, &god_turn, &god_used, &game_turns, map, &playerManager);
+                printf("当前已完成 %d 回合\n", game_turns);
+            }
                 }
                 continue;
             } else {
@@ -317,8 +326,7 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
         //                     continue;
         //                 }
         //                 currentPlayer->tool.bomb--;
-        //                 currentPlayer->tool.total--;
-                        
+        //                 currentPlayer->tool.total--;              
         //                 map[i].type = '@'; // 设置为炸弹
         //             }
         //             else{
@@ -445,11 +453,14 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 }
             }
             else{
-                printf("此处为特殊地块，触发相应事件。\n");
                 game_handle_cell_event(currentPlayer, &map[i], &playerManager);
             }
             
             playerManager_nextPlayer(&playerManager);
+            if (playerManager.currentPlayerIndex == 0) {
+                game_handle_turn(&god_pos, &god_turn, &god_used, &game_turns, map, &playerManager);
+                printf("当前已完成 %d 回合\n", game_turns);
+            }
         } 
         else if (strcmp(cmd, "sell") == 0) {
             if (param != NULL) {
