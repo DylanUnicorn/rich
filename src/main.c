@@ -184,6 +184,28 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     // }
                     if(map[j].type == '#'){
                         printf("你遇见了路障，停止前进！\n");
+                        map[find_place(map, currentPlayer->position)].tool = 0;
+                        if(map[j].id == 0 ){
+                            map[j].type = 'S'; // 恢复为开始
+                        }
+                        else if(map[j].id == 14 || map[j].id == 63 || 
+                                map[j].id == 49){
+                            map[j].type = 'P'; // 恢复为公园
+                        }
+                        else if(map[j].id == 35){
+                            map[j].type = 'G'; // 恢复为礼品屋
+                        }
+                        else if(map[j].id == 28){
+                            map[j].type = 'T'; // 恢复为道具屋
+                        }
+                        else if(map[j].id == 64 || map[j].id == 65 || 
+                                map[j].id == 66 || map[j].id == 67 || 
+                                map[j].id == 68 || map[j].id == 69){
+                            map[j].type = '$'; // 恢复为矿地
+                        }
+                        else{
+                            map[j].type = '0'; // 恢复为普通地块
+                        }
                         currentPlayer->position = (currentPlayer->position + i) % 70;
                         playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
                         if (playerManager.currentPlayerIndex == 0) {
@@ -273,6 +295,8 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 }
                 else{
                     game_handle_cell_event(currentPlayer, &map[i], &playerManager);
+                    // if(currentPlayer->position == 28)//进入道具屋出来不自动切换下一个人
+                    // goto next_turn;
                 }
                 if (!turn_advanced) {
                     playerManager_nextPlayer(&playerManager);
@@ -433,6 +457,28 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 // }
                   if(map[j].type == '#'){
                     printf("你遇见了路障，停止前进！\n");
+                    map[find_place(map, nextPos)].tool = 0;
+                    if(map[find_place(map, nextPos)].id == 0 ){
+                        map[find_place(map, nextPos)].type = 'S'; // 恢复为开始
+                    }
+                    else if(map[find_place(map, nextPos)].id == 14 || map[find_place(map, nextPos)].id == 63 || 
+                            map[find_place(map, nextPos)].id == 49){
+                        map[find_place(map, nextPos)].type = 'P'; // 恢复为公园
+                    }
+                    else if(map[find_place(map, nextPos)].id == 35){
+                        map[find_place(map, nextPos)].type = 'G'; // 恢复为礼品屋
+                    }
+                    else if(map[find_place(map, nextPos)].id == 28){
+                        map[find_place(map, nextPos)].type = 'T'; // 恢复为道具屋
+                    }
+                    else if(map[find_place(map, nextPos)].id == 64 || map[find_place(map, nextPos)].id == 65 || 
+                            map[find_place(map, nextPos)].id == 66 || map[find_place(map, nextPos)].id == 67 || 
+                            map[find_place(map, nextPos)].id == 68 || map[find_place(map, nextPos)].id == 69){
+                        map[find_place(map, nextPos)].type = '$'; // 恢复为矿地
+                    }
+                    else{
+                        map[find_place(map, nextPos)].type = '0'; // 恢复为普通地块
+                    }
                     currentPlayer->position = nextPos;
                     playerManager_nextPlayer(&playerManager);
                     if (playerManager.currentPlayerIndex == 0) {
@@ -517,6 +563,8 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
             }
             else{
                 game_handle_cell_event(currentPlayer, &map[i], &playerManager);
+                // if(currentPlayer->position == 28)//进入道具屋出来不自动切换下一个人
+                //     goto next_turn;
             }
             
             playerManager_nextPlayer(&playerManager);
