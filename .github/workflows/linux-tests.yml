@@ -2,33 +2,27 @@ name: Linux Tests
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [master, main]
   pull_request:
 
 jobs:
-  build-and-test:
+  regression:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake build-essential ninja-build
+          sudo apt-get install -y cmake build-essential ninja-build python3
 
-      - name: Configure
-        run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - name: Run JSON regression suite
+        run: bash tests/run_json_tests.sh
 
-      - name: Build
-        run: |
-          cmake --build build --config Release
-
-      - name: Run bash tests
-        run: |
-          bash tests/run_tests.sh
-
-      - name: Run CTest (optional aggregator)
-        run: |
-          ctest --test-dir build --output-on-failure
+      - name: Upload dumps on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-failing-dumps
+          path: tests/json_cases/**/dump.json
