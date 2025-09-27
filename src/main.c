@@ -33,6 +33,13 @@ static char* read_file_all(const char* path, long* out_len);
 
 #define MAX_INPUT 100
 
+/* Global god state for dump.json */
+static int g_god_spawn_cooldown = 10; // 冷却回合数（0表示可刷新）
+static int g_god_location = -1;       // 财神位置，-1 表示未出现
+static int g_god_turn = 0;            // 已存在的回合计数（1..5），用于计算剩余存续
+static int g_is_test_mode = 0;        // 测试模式标记，控制随机数种子
+
+
 void run_test_helloworld() {
     printf("Hello World!\n");
 }
@@ -50,10 +57,19 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
 
     int use_preset = 0;
     int round_count = 1; // 记录完整回合数
-    int game_turns = 10; // 直接作为冷却计数，0时可刷新财神
-    bool god_used = false;//标志财神是否被使用
-    int god_turn = 0;//记录财神出现的回合数
-    int god_pos = -1;//记录财神位置 且god_pos = -1表示未出现
+    // 同步到全局的财神状态
+    g_god_spawn_cooldown = 10; // 直接作为冷却计数，0时可刷新财神
+    bool god_used = false;     // 标志财神是否被使用（仅本局变量，回合末处理并写回全局）
+    g_god_turn = 0;            // 记录财神出现的回合数
+    g_god_location = -1;       // 记录财神位置 且-1表示未出现
+    g_is_test_mode = is_test_mode;
+
+    // 统一随机数种子：测试模式固定，交互模式使用时间种子
+    if (g_is_test_mode) {
+        srand(1);
+    } else {
+        srand((unsigned int)time(NULL));
+    }
 
     if (is_test_mode && case_dir) {
         char preset_path[1024];
@@ -170,6 +186,16 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                         printf("你遇见了路障，停止前进！\n");
                         currentPlayer->position = (currentPlayer->position + i) % 70;
                         playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                        if (playerManager.currentPlayerIndex == 0) {
+                            round_count++;
+                            // 财神冷却机制
+                            if (g_god_location == -1 && g_god_spawn_cooldown > 0) {
+                                g_god_spawn_cooldown--;
+                                printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", g_god_spawn_cooldown);
+                            }
+                            game_handle_turn(&g_god_location, &g_god_turn, &god_used, &g_god_spawn_cooldown, map, &playerManager);
+                            printf("当前到达 %d 回合\n", round_count);
+                        }
                         turn_advanced = 1;
                         break;
                     }
@@ -253,11 +279,11 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     if (playerManager.currentPlayerIndex == 0) {
                         round_count++;
                         // 财神冷却机制
-                        if (god_pos == -1 && game_turns > 0) {
-                            game_turns--;
-                            printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", game_turns);
+                        if (g_god_location == -1 && g_god_spawn_cooldown > 0) {
+                            g_god_spawn_cooldown--;
+                            printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", g_god_spawn_cooldown);
                         }
-                        game_handle_turn(&god_pos, &god_turn, &god_used, &game_turns, map, &playerManager);
+                        game_handle_turn(&g_god_location, &g_god_turn, &god_used, &g_god_spawn_cooldown, map, &playerManager);
                         printf("当前到达 %d 回合\n", round_count);
                     }
                 }
@@ -388,7 +414,10 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 currentPlayer->tool.doll);
         }
         else if (strcmp(cmd, "roll") == 0) {
-            srand(time(NULL));
+            // 掷骰子：测试模式不重置随机种子
+            if (!g_is_test_mode) {
+                srand((unsigned int)time(NULL));
+            }
             int roll = roll_dice();
             printf("玩家 %s 掷出了 %d 点，\n", player_getName(currentPlayer->character), roll);
 
@@ -406,6 +435,16 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     printf("你遇见了路障，停止前进！\n");
                     currentPlayer->position = nextPos;
                     playerManager_nextPlayer(&playerManager);
+                    if (playerManager.currentPlayerIndex == 0) {
+                        round_count++;
+                        // 财神冷却机制
+                        if (g_god_location == -1 && g_god_spawn_cooldown > 0) {
+                            g_god_spawn_cooldown--;
+                            printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", g_god_spawn_cooldown);
+                        }
+                        game_handle_turn(&g_god_location, &g_god_turn, &god_used, &g_god_spawn_cooldown, map, &playerManager);
+                        printf("当前到达 %d 回合\n", round_count);
+                    }
                     goto next_turn;
                 }
             }
@@ -482,15 +521,15 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
             
             playerManager_nextPlayer(&playerManager);
             if (playerManager.currentPlayerIndex == 0) {
-                        round_count++;
-                        // 财神冷却机制
-                        if (god_pos == -1 && game_turns > 0) {
-                            game_turns--;
-                            printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", game_turns);
-                        }
-                        game_handle_turn(&god_pos, &god_turn, &god_used, &game_turns, map, &playerManager);
-                        printf("当前到达 %d 回合\n", round_count);
-                    }
+                round_count++;
+                // 财神冷却机制
+                if (g_god_location == -1 && g_god_spawn_cooldown > 0) {
+                    g_god_spawn_cooldown--;
+                    printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", g_god_spawn_cooldown);
+                }
+                game_handle_turn(&g_god_location, &g_god_turn, &god_used, &g_god_spawn_cooldown, map, &playerManager);
+                printf("当前到达 %d 回合\n", round_count);
+            }
         } 
         else if (strcmp(cmd, "sell") == 0) {
             if (param != NULL) {
@@ -679,6 +718,21 @@ static void write_dump_json(const char* case_dir, Structure* map, PlayerManager*
     }
     fprintf(f, "    \"ended\": %s,\n", ended ? "true" : "false");
     fprintf(f, "    \"winner\": %d\n", winner_id);
+    fputs("  },\n", f);
+
+    /* god block (global) */
+    fputs("  \"god\": {\n", f);
+    fprintf(f, "    \"spawn_cooldown\": %d,\n", g_god_spawn_cooldown);
+    fprintf(f, "    \"location\": %d,\n", g_god_location);
+    /* duration: 0 if no god; otherwise remaining = 5 - (g_god_turn-1) */
+    int god_duration = 0;
+    if (g_god_location != -1) {
+        int spent = (g_god_turn > 0 ? g_god_turn - 1 : 0);
+        if (spent < 0) spent = 0;
+        god_duration = 5 - spent;
+        if (god_duration < 0) god_duration = 0;
+    }
+    fprintf(f, "    \"duration\": %d\n", god_duration);
     fputs("  }\n", f);
 
     fputs("}\n", f);
@@ -890,6 +944,35 @@ static void load_preset(const char* json, Structure* map, PlayerManager* pm) {
         if (lb && rb && rb > lb) {
             int nowp = parse_int_in(lb, rb, "now_player", pm->currentPlayerIndex);
             if (nowp >= 0 && nowp < pm->playerCount) pm->currentPlayerIndex = nowp;
+        }
+    }
+
+    /* god: optional global block */
+    const char* gods = strstr(json, "\"god\"");
+    if (gods) {
+        const char* lb = strchr(gods, '{');
+        const char* rb = lb ? strchr(lb, '}') : NULL;
+        if (lb && rb && rb > lb) {
+            int sc = parse_int_in(lb, rb, "spawn_cooldown", g_god_spawn_cooldown);
+            int loc = parse_int_in(lb, rb, "location", g_god_location);
+            int dur = parse_int_in(lb, rb, "duration", 0);
+            g_god_spawn_cooldown = sc;
+            g_god_location = loc;
+            if (g_god_location != -1) {
+                int idx = find_place(map, g_god_location);
+                if (idx >= 0) {
+                    map[idx].type = 'F';
+                }
+            }
+            if (dur <= 0 || g_god_location == -1) {
+                g_god_turn = 0;
+            } else {
+                if (dur > 5) dur = 5;
+                /* g_god_turn counts 1..5 for elapsed presence; duration = 5 - (turn-1) */
+                g_god_turn = (5 - dur) + 1;
+                if (g_god_turn < 1) g_god_turn = 1;
+                if (g_god_turn > 5) g_god_turn = 5;
+            }
         }
     }
 }

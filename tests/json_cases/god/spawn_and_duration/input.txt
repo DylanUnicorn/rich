@@ -1,0 +1,5 @@
+# cooldown is preset to 1. One full round means both players act once.
+# After Q then J act, cooldown becomes 0; god spawns at next round start (Q's turn).
+step 0
+step 0
+dump

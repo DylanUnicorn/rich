@@ -88,5 +88,10 @@
     "next_player": 2,
     "ended": false,
     "winner": -1
+  },
+  "god": {
+    "spawn_cooldown": 10,
+    "location": 0,
+    "duration": 5
   }
 }

@@ -1,0 +1,40 @@
+{
+  "players": [
+    {
+      "index": 0,
+      "name": "Q",
+      "fund": 10000,
+      "credit": 0,
+      "location": 2,
+      "alive": true,
+      "prop": {
+        "bomb": 0,
+        "barrier": 0,
+        "robot": 0,
+        "total": 0
+      },
+      "buff": {
+        "god": 0,
+        "prison": 0,
+        "hospital": 0
+      }
+    }
+  ],
+  "houses": {
+  },
+  "placed_prop": {
+    "bomb": [],
+    "barrier": []
+  },
+  "game": {
+    "now_player": 0,
+    "next_player": 0,
+    "ended": false,
+    "winner": -1
+  },
+  "god": {
+    "spawn_cooldown": 9,
+    "location": -1,
+    "duration": 0
+  }
+}

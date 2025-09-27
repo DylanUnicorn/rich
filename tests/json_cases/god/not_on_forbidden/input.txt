@@ -1,0 +1,13 @@
+# cooldown default 10; speed up by presetting to 0 would be faster, but test robustness with one full step
+step 0
+step 0
+step 0
+step 0
+step 0
+step 0
+step 0
+step 0
+step 0
+step 0
+# dump after potential spawn
+dump

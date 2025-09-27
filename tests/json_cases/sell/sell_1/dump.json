@@ -22,7 +22,7 @@
     {
       "index": 1,
       "name": "A",
-      "fund": 11200,
+      "fund": 10000,
       "credit": 0,
       "location": 0,
       "alive": true,
@@ -41,7 +41,7 @@
     {
       "index": 2,
       "name": "S",
-      "fund": 10800,
+      "fund": 10000,
       "credit": 0,
       "location": 0,
       "alive": true,
@@ -60,7 +60,7 @@
     {
       "index": 3,
       "name": "J",
-      "fund": 10400,
+      "fund": 10000,
       "credit": 0,
       "location": 0,
       "alive": true,
@@ -78,6 +78,9 @@
     }
   ],
   "houses": {
+    "2": { "owner": "A", "level": 2 },
+    "3": { "owner": "S", "level": 1 },
+    "4": { "owner": "J", "level": 0 }
   },
   "placed_prop": {
     "bomb": [],
@@ -88,5 +91,10 @@
     "next_player": 1,
     "ended": false,
     "winner": -1
+  },
+  "god": {
+    "spawn_cooldown": 10,
+    "location": 0,
+    "duration": 5
   }
 }
