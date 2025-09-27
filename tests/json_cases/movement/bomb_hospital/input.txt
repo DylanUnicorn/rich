@@ -1,5 +1,0 @@
-bomb 2
-step 5
-bomb 2
-step 5
-dump

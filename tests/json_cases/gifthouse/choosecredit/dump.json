@@ -4,7 +4,7 @@
       "index": 0,
       "name": "Q",
       "fund": 10000,
-      "credit": 200,
+      "credit": 0,
       "location": 35,
       "alive": true,
       "prop": {

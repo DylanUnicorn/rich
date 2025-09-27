@@ -1,4 +1,0 @@
-step 28
-3
-f
-dump
