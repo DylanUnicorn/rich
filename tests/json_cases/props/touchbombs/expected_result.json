@@ -5,7 +5,8 @@
      "buff": {"god": 0, "prison": 0, "hospital": 3}
     }
   ],
-  "houses": {},
-  "placed_prop": {"bomb": [10,11], "barrier": [10,11]},
-  "game": {"now_player": 0, "next_player": 0, "ended": true, "winner": -1}
+  "houses": {
+  },
+  "placed_prop": {"bomb": [], "barrier": [10,11]},
+  "game": {"now_player": 0, "next_player": 0, "ended": false, "winner": -1}
 }

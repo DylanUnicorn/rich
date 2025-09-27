@@ -2,7 +2,7 @@
   "players": [
     {"index": 0, "name": "Q", "fund": 10000, "credit": 0, "location": 14,
      "prop": {"bomb": 0, "barrier": 0, "robot": 0, "total": 0},
-     "buff": {"god": 0, "prison": 1, "hospital": 1}
+     "buff": {"god": 0, "prison": 0, "hospital": 1}
     },
     {"index": 1, "name": "A", "fund": 10000, "credit": 0, "location": 0,
      "prop": {"bomb": 0, "barrier": 0, "robot": 0, "total": 0},
