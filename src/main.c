@@ -120,6 +120,21 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
     while (1) {
         
         Player* currentPlayer = playerManager_getCurrentPlayer(&playerManager);
+        if(currentPlayer != NULL && currentPlayer->bankruptcy == true){
+            printf("%s 已破产，跳过该玩家回合。\n", player_getName(currentPlayer->character));
+            if (playerManager.currentPlayerIndex == 0) {
+                round_count++;
+                // 财神冷却机制
+                if (g_god_location == -1 && g_god_spawn_cooldown > 0) {
+                    g_god_spawn_cooldown--;
+                    printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", g_god_spawn_cooldown);
+                }
+                game_handle_turn(&g_god_location, &g_god_turn, &god_used, &g_god_spawn_cooldown, map, &playerManager);
+                printf("当前到达 %d 回合\n", round_count);
+            }
+            playerManager_nextPlayer(&playerManager);
+            goto next_turn;
+        }
         if (currentPlayer == NULL) break;
         
         if (!is_test_mode) {
