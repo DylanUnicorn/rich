@@ -169,6 +169,7 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 }
                 if (turn_advanced) continue;
                 currentPlayer->position = (currentPlayer->position + steps) % 70; // 假设地图有70个位置
+                if(currentPlayer->position < 0) currentPlayer->position += 70;  
                 printf("你移动到了位置 %d\n", currentPlayer->position);
 
                 int i = find_place(map, currentPlayer->position);
