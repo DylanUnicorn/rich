@@ -3,9 +3,9 @@
     {
       "index": 0,
       "name": "Q",
-      "fund": 200,
-      "credit": 0,
-      "location": 1,
+      "fund": 10000,
+      "credit": 100,
+      "location": 35,
       "alive": true,
       "prop": {
         "bomb": 0,
@@ -14,7 +14,7 @@
         "total": 0
       },
       "buff": {
-        "god": 0,
+        "god": 5,
         "prison": 0,
         "hospital": 0
       }
@@ -22,7 +22,7 @@
     {
       "index": 1,
       "name": "A",
-      "fund": 1800,
+      "fund": 10000,
       "credit": 0,
       "location": 0,
       "alive": true,
@@ -40,7 +40,6 @@
     }
   ],
   "houses": {
-    "1": { "owner": "A", "level": 3 }
   },
   "placed_prop": {
     "bomb": [],

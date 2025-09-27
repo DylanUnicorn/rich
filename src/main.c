@@ -245,11 +245,33 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 int offset = atoi(param);
                 if(offset >= -10 && offset <= 10 && offset != 0){
                     if(currentPlayer->tool.roadblock > 0){
-                        currentPlayer->tool.roadblock--;
-                        currentPlayer->tool.total--;
                         int target_pos = (currentPlayer->position + offset + 70) % 70;
                         int i = find_place(map, target_pos);
+                        bool owner_on_land = false;
+                        
+                        for(int p = 0; p < playerManager.playerCount; p++){
+                            Player* player = &playerManager.players[p];
+                            if(player->position == target_pos && player->bankruptcy == false){
+                                printf("该位置有玩家，无法放置路障。\n");
+                                owner_on_land = true;
+                            }
+                        }
+                        if(map[i].type == '@'){
+                            printf("该位置已有炸弹，无法放置路障。\n");
+                            continue;
+                        }
+                        else if(map[i].type == '#'){
+                            printf("该位置已有路障，无法重复放置。\n");
+                            continue;
+                        }
+                        else if(owner_on_land == true){
+                            owner_on_land = false;
+                            continue;
+                        }    
                         map[i].type = '#'; // 设置为路障
+                        currentPlayer->tool.roadblock--;
+                        currentPlayer->tool.total--;
+                        
                     }
                     else{
                         printf("你没有路障道具，无法使用。\n");
@@ -268,10 +290,31 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 int offset = atoi(param);
                 if(offset >= -10 && offset <= 10 && offset != 0){
                     if(currentPlayer->tool.bomb > 0){
-                        currentPlayer->tool.bomb--;
-                        currentPlayer->tool.total--;
                         int target_pos = (currentPlayer->position + offset + 70) % 70;
                         int i = find_place(map, target_pos);
+                        bool owner_on_land = false;
+                        for(int p = 0; p < playerManager.playerCount; p++){
+                            Player* player = &playerManager.players[p];
+                            if(player->position == target_pos && player->bankruptcy == false){
+                                printf("该位置有玩家，无法放置炸弹。\n");
+                                owner_on_land = true;
+                            }
+                        }
+                        if(map[i].type == '@'){
+                            printf("该位置已有炸弹，无法重复放置。\n");
+                            continue;
+                        }
+                        else if(map[i].type == '#'){
+                            printf("该位置已有路障，无法放置炸弹。\n");
+                            continue;
+                        }
+                        else if(owner_on_land == true){
+                            owner_on_land = false;
+                            continue;
+                        }
+                        currentPlayer->tool.bomb--;
+                        currentPlayer->tool.total--;
+                        
                         map[i].type = '@'; // 设置为炸弹
                     }
                     else{
