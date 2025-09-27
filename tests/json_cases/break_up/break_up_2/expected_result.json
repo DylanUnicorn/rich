@@ -4,13 +4,13 @@
      "prop": {"bomb": 0, "barrier": 0, "robot": 0, "total": 0},
      "buff": {"god": 0, "prison": 0, "hospital": 0}
     },
-    {"index": 1, "name": "A", "fund": 9000, "credit": 0, "location": 4, "alive": true,
+    {"index": 1, "name": "A", "fund": 11000, "credit": 0, "location": 4, "alive": true,
      "prop": {"bomb": 0, "barrier": 0, "robot": 0, "total": 0},
      "buff": {"god": 0, "prison": 0, "hospital": 0}
     }
   ],
    "houses": {
-    "1": {"owner": "A", "level": 3}},
+    "33": {"owner": "A", "level": 3}},
   "placed_prop": {"bomb": [], "barrier": []},
   "game": {"now_player": 1, "next_player": 0, "ended": false, "winner": -1}
 }

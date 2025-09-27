@@ -10,8 +10,8 @@
       "prop": {
         "bomb": 0,
         "barrier": 0,
-        "robot": 0,
-        "total": 0
+        "robot": 1,
+        "total": 1
       },
       "buff": {
         "god": 0,
@@ -43,7 +43,7 @@
   },
   "placed_prop": {
     "bomb": [],
-    "barrier": [11]
+    "barrier": [10, 11]
   },
   "game": {
     "now_player": 0,
