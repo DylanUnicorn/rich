@@ -246,7 +246,7 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     }
                 }
                 else{
-                    game_handle_cell_event(currentPlayer, &map[i], &playerManager, &god_used);
+                    game_handle_cell_event(currentPlayer, &map[i], &playerManager);
                 }
                 if (!turn_advanced) {
                     playerManager_nextPlayer(&playerManager);
@@ -478,7 +478,7 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
             }
             else{
                 printf("此处为特殊地块，触发相应事件。\n");
-                game_handle_cell_event(currentPlayer, &map[i], &playerManager, &god_used);
+                game_handle_cell_event(currentPlayer, &map[i], &playerManager);
             }
             
             playerManager_nextPlayer(&playerManager);
