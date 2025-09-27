@@ -1,14 +1,16 @@
 {
   "players": [
-    {"index": 0, "name": "Q", "fund": 10000, "credit": 0, "location": 0,
+    {"index": 0, "name": "J", "fund": 10000, "credit": 10000, "location": 0,
      "prop": {"bomb": 0, "barrier": 0, "robot": 0, "total": 0},
      "buff": {"god": 0, "prison": 0, "hospital": 0}
     },
-    {"index": 1, "name": "A", "fund": 10000, "credit": 0, "location": 0,
+    {"index": 1, "name": "S", "fund": 9000, "credit": 0, "location": 0,
      "prop": {"bomb": 0, "barrier": 0, "robot": 0, "total": 0},
      "buff": {"god": 0, "prison": 0, "hospital": 0}
     }
   ],
-  "placed_prop": {"bomb": [1], "barrier": [2, 6]},
+  "houses": {"14":{"owner": "S","level": 3}}
+,
+  "placed_prop": {"bomb": [], "barrier": []},
   "game": {"now_player": 0}
 }
