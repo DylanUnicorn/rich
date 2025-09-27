@@ -1,6 +1,6 @@
 {
   "players": [
-    {"index": 0, "name": "J", "fund": 18000, "credit": 0, "location": 0, "alive": false,
+    {"index": 0, "name": "J", "fund": 18000, "credit": 0, "location": 0, "alive": true,
      "prop": {"bomb": 0, "barrier": 0, "robot": 0, "total": 0},
      "buff": {"god": 0, "prison": 0, "hospital": 0}
     },

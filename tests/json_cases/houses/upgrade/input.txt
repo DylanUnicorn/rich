@@ -1,0 +1,7 @@
+step 10
+y
+step 2
+n
+step 0
+u
+dump
