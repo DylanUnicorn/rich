@@ -158,18 +158,42 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 for(int i = 0; i <= steps; i++){
                     int nextPos = (currentPlayer->position + i) % 70;
                     int j = find_place(map, nextPos);
-                    // if(map[j].type == '@'){
-                    //     printf("你遇见了炸弹，被送往医院！\n");
-                    //     InHospital(currentPlayer);
-                    //     map[j].type = '0'; // Consume bomb
-                    //     playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-                    //     turn_advanced = 1;
-                    //     break;
-                    // }
                     if(map[j].type == '#'){
                         printf("你遇见了路障，停止前进！\n");
+                        map[find_place(map, currentPlayer->position)].tool = 0;
+                        if(map[find_place(map, currentPlayer->position)].id == 0 ){
+                            map[find_place(map, currentPlayer->position)].type = 'S'; // 恢复为开始
+                        }
+                        else if(map[find_place(map, currentPlayer->position)].id == 14 || map[find_place(map, currentPlayer->position)].id == 63 || 
+                                map[find_place(map, currentPlayer->position)].id == 49){
+                            map[find_place(map, currentPlayer->position)].type = 'P'; // 恢复为公园
+                        }
+                        else if(map[find_place(map, currentPlayer->position)].id == 35){
+                            map[find_place(map, currentPlayer->position)].type = 'G'; // 恢复为礼品屋
+                        }
+                        else if(map[find_place(map, currentPlayer->position)].id == 28){
+                            map[find_place(map, currentPlayer->position)].type = 'T'; // 恢复为道具屋
+                        }
+                        else if(map[find_place(map, currentPlayer->position)].id == 64 || map[find_place(map, currentPlayer->position)].id == 65 || 
+                                map[find_place(map, currentPlayer->position)].id == 66 || map[find_place(map, currentPlayer->position)].id == 67 || 
+                                map[find_place(map, currentPlayer->position)].id == 68 || map[find_place(map, currentPlayer->position)].id == 69){
+                            map[find_place(map, currentPlayer->position)].type = '$'; // 恢复为矿地
+                        }
+                        else{
+                            map[find_place(map, currentPlayer->position)].type = '0'; // 恢复为普通地块
+                        }
                         currentPlayer->position = (currentPlayer->position + i) % 70;
                         playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                        if (playerManager.currentPlayerIndex == 0) {
+                        round_count++;
+                        // 财神冷却机制
+                        if (god_pos == -1 && game_turns > 0) {
+                            game_turns--;
+                            printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", game_turns);
+                        }
+                        game_handle_turn(&god_pos, &god_turn, &god_used, &game_turns, map, &playerManager);
+                        printf("当前到达 %d 回合\n", round_count);
+                    }
                         turn_advanced = 1;
                         break;
                     }
@@ -180,7 +204,30 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     int j = find_place(map, nextPos);
                     if(map[j].type == 'F'){
                         printf("你遇见了天降财神，你太幸运啦！\n");
-                        map[j].type = '0'; // Consume bomb
+                        god_used = true;
+                        currentPlayer->god = true;
+                        currentPlayer->god_bless_days += 5;
+                        if(map[j].id == 0 ){
+                            map[j].type = 'S'; // 恢复为开始
+                        }
+                        else if(map[j].id == 14 || map[j].id == 63 || 
+                                map[j].id == 49){
+                            map[j].type = 'P'; // 恢复为公园
+                        }
+                        else if(map[j].id == 35){
+                            map[j].type = 'G'; // 恢复为礼品屋
+                        }
+                        else if(map[j].id == 28){
+                            map[j].type = 'T'; // 恢复为道具屋
+                        }
+                        else if(map[j].id == 64 || map[j].id == 65 || 
+                                map[j].id == 66 || map[j].id == 67 || 
+                                map[j].id == 68 || map[j].id == 69){
+                            map[j].type = '$'; // 恢复为矿地
+                        }
+                        else{
+                            map[j].type = '0'; // 恢复为普通地块
+                        }
                         break;
                     }
                 }
@@ -206,12 +253,6 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                         printf("错误指令，输入help寻求帮助。\n");
                     }
                 }
-                // else if(map[i].type == 'P'){
-                //     printf("你遇见了监狱，停止前进！\n");
-                //     InPrison(currentPlayer, map[i]);
-                //     playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-                //     turn_advanced = 1;
-                // }
                 else if(map[i].owner == currentPlayer){
                     printf("此处为你拥有的地产，可以升级或出售。\n");
                     printf("是否升级此地？(u 升级 / n 不操作): ");
@@ -285,11 +326,7 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                                 owner_on_land = true;
                             }
                         }
-                        if(map[i].type == '@'){
-                            printf("该位置已有炸弹，无法放置路障。\n");
-                            continue;
-                        }
-                        else if(map[i].type == '#'){
+                        if(map[i].type == '#'){
                             printf("该位置已有路障，无法重复放置。\n");
                             continue;
                         }
@@ -314,49 +351,6 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 printf("错误: 指令block需要指定位置\n");
             }
         }
-        // else if (strcmp(cmd, "bomb") == 0) {
-        //     if (param != NULL) {
-        //         int offset = atoi(param);
-        //         if(offset >= -10 && offset <= 10 && offset != 0){
-        //             if(currentPlayer->tool.bomb > 0){
-        //                 int target_pos = (currentPlayer->position + offset + 70) % 70;
-        //                 int i = find_place(map, target_pos);
-        //                 bool owner_on_land = false;
-        //                 for(int p = 0; p < playerManager.playerCount; p++){
-        //                     Player* player = &playerManager.players[p];
-        //                     if(player->position == target_pos && player->bankruptcy == false){
-        //                         printf("该位置有玩家，无法放置炸弹。\n");
-        //                         owner_on_land = true;
-        //                     }
-        //                 }
-        //                 if(map[i].type == '@'){
-        //                     printf("该位置已有炸弹，无法重复放置。\n");
-        //                     continue;
-        //                 }
-        //                 else if(map[i].type == '#'){
-        //                     printf("该位置已有路障，无法放置炸弹。\n");
-        //                     continue;
-        //                 }
-        //                 else if(owner_on_land == true){
-        //                     owner_on_land = false;
-        //                     continue;
-        //                 }
-        //                 currentPlayer->tool.bomb--;
-        //                 currentPlayer->tool.total--;              
-        //                 map[i].type = '@'; // 设置为炸弹
-        //             }
-        //             else{
-        //                 printf("你没有炸弹道具，无法使用。\n");
-        //             }
-        //         }
-        //         else{
-        //             printf("错误: 指令bomb位置参数应在-10到10之间且不为0\n");
-        //         }
-        //     }
-        //     else {
-        //         printf("错误: 指令bomb需要指定位置\n");
-        //     }
-        // }
         else if (strcmp(cmd, "robot") == 0) {
             if (currentPlayer->tool.doll > 0) {
                 currentPlayer->tool.doll--;
@@ -364,8 +358,29 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 for(int i = 1; i <= 10; i++){
                     int clear_pos = (currentPlayer->position + i) % 70;
                     int map_idx = find_place(map, clear_pos);
-                    if (map[map_idx].type == '#' || map[map_idx].type == '@') {
-                        map[map_idx].type = '0';
+                    if (map[map_idx].type == '#') {
+                        map[map_idx].tool = 0;
+                        if(map[map_idx].id == 0 ){
+                            map[map_idx].type = 'S'; // 恢复为开始
+                        }
+                        else if(map[map_idx].id == 14 || map[map_idx].id == 63 || 
+                                map[map_idx].id == 49){
+                            map[map_idx].type = 'P'; // 恢复为公园
+                        }
+                        else if(map[map_idx].id == 35){
+                            map[map_idx].type = 'G'; // 恢复为礼品屋
+                        }
+                        else if(map[map_idx].id == 28){
+                            map[map_idx].type = 'T'; // 恢复为道具屋
+                        }
+                        else if(map[map_idx].id == 64 || map[map_idx].id == 65 || 
+                                map[map_idx].id == 66 || map[map_idx].id == 67 || 
+                                map[map_idx].id == 68 || map[map_idx].id == 69){
+                            map[map_idx].type = '$'; // 恢复为矿地
+                        }
+                        else{
+                            map[map_idx].type = '0'; // 恢复为普通地块
+                        }
                     }
                 }
             }
@@ -395,17 +410,42 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
             for(int i = 1; i <= roll; i++){
                 int nextPos = (currentPlayer->position + i) % 70;
                 int j = find_place(map, nextPos);
-                // if(map[j].type == '@'){
-                //     printf("你遇见了炸弹，被送往医院！\n");
-                //     InHospital(currentPlayer);
-                //     map[j].type = '0'; // Consume bomb
-                //     playerManager_nextPlayer(&playerManager);
-                //     goto next_turn;
-                // }
-                  if(map[j].type == '#'){
+                if(map[j].type == '#'){
                     printf("你遇见了路障，停止前进！\n");
+                    map[find_place(map, currentPlayer->position)].tool = 0;
+                    if(map[find_place(map, currentPlayer->position)].id == 0 ){
+                        map[find_place(map, currentPlayer->position)].type = 'S'; // 恢复为开始
+                    }
+                    else if(map[find_place(map, currentPlayer->position)].id == 14 || map[find_place(map, currentPlayer->position)].id == 63 || 
+                            map[find_place(map, currentPlayer->position)].id == 49){
+                        map[find_place(map, currentPlayer->position)].type = 'P'; // 恢复为公园
+                    }
+                    else if(map[find_place(map, currentPlayer->position)].id == 35){
+                        map[find_place(map, currentPlayer->position)].type = 'G'; // 恢复为礼品屋
+                    }
+                    else if(map[find_place(map, currentPlayer->position)].id == 28){
+                        map[find_place(map, currentPlayer->position)].type = 'T'; // 恢复为道具屋
+                    }
+                    else if(map[find_place(map, currentPlayer->position)].id == 64 || map[find_place(map, currentPlayer->position)].id == 65 || 
+                            map[find_place(map, currentPlayer->position)].id == 66 || map[find_place(map, currentPlayer->position)].id == 67 || 
+                            map[find_place(map, currentPlayer->position)].id == 68 || map[find_place(map, currentPlayer->position)].id == 69){
+                        map[find_place(map, currentPlayer->position)].type = '$'; // 恢复为矿地
+                    }
+                    else{
+                        map[find_place(map, currentPlayer->position)].type = '0'; // 恢复为普通地块
+                    }
                     currentPlayer->position = nextPos;
                     playerManager_nextPlayer(&playerManager);
+                    if (playerManager.currentPlayerIndex == 0) {
+                        round_count++;
+                        // 财神冷却机制
+                        if (god_pos == -1 && game_turns > 0) {
+                            game_turns--;
+                            printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", game_turns);
+                        }
+                        game_handle_turn(&god_pos, &god_turn, &god_used, &game_turns, map, &playerManager);
+                        printf("当前到达 %d 回合\n", round_count);
+                    }
                     goto next_turn;
                 }
             }
@@ -414,7 +454,30 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     int j = find_place(map, nextPos);
                     if(map[j].type == 'F'){
                         printf("你遇见了天降财神，你太幸运啦！\n");
-                        map[j].type = '0'; // Consume bomb
+                        god_used = true;
+                        currentPlayer->god = true;
+                        currentPlayer->god_bless_days += 5;
+                        if(map[j].id == 0 ){
+                            map[j].type = 'S'; // 恢复为开始
+                        }
+                        else if(map[j].id == 14 || map[j].id == 63 || 
+                                map[j].id == 49){
+                            map[j].type = 'P'; // 恢复为公园
+                        }
+                        else if(map[j].id == 35){
+                            map[j].type = 'G'; // 恢复为礼品屋
+                        }
+                        else if(map[j].id == 28){
+                            map[j].type = 'T'; // 恢复为道具屋
+                        }
+                        else if(map[j].id == 64 || map[j].id == 65 || 
+                                map[j].id == 66 || map[j].id == 67 || 
+                                map[j].id == 68 || map[j].id == 69){
+                            map[j].type = '$'; // 恢复为矿地
+                        }
+                        else{
+                            map[j].type = '0'; // 恢复为普通地块
+                        }
                         break;
                     }
                 }
