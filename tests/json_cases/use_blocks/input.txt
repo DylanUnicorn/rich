@@ -1,0 +1,8 @@
+block 1
+block 1
+block 1
+robot
+block 1
+block 1
+block 1
+dump
