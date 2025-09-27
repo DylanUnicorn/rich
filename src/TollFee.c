@@ -8,7 +8,6 @@
 void GetTollFee(Player *player, Structure *map){
     if(player != map->owner ){
         if (player->god){
-            player->god_bless_days--;
             printf("财神附体，可免过路费。\n");
             return;
         }

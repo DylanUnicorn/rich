@@ -115,13 +115,14 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
             printf("\nCurrent turn: %s\n", player_getName(currentPlayer->character));
         }
     }
-
+ 
     // 游戏主循环
     while (1) {
         
         Player* currentPlayer = playerManager_getCurrentPlayer(&playerManager);
         if(currentPlayer != NULL && currentPlayer->bankruptcy == true){
             printf("%s 已破产，跳过该玩家回合。\n", player_getName(currentPlayer->character));
+            
             if (playerManager.currentPlayerIndex == 0) {
                 round_count++;
                 // 财神冷却机制
@@ -136,7 +137,14 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
             goto next_turn;
         }
         if (currentPlayer == NULL) break;
-        
+        if(currentPlayer->god_bless_days == 0 && currentPlayer->god == true){
+            currentPlayer->god = false;
+            printf("财神附体效果结束。\n");
+        } 
+        if(currentPlayer->god_bless_days > 0 && currentPlayer->god == true){
+            printf("财神附体效果剩余 %d 回合。\n", currentPlayer->god_bless_days);
+            currentPlayer->god_bless_days--;
+        }
         if (!is_test_mode) {
             print_map(map, &playerManager);
             ui_display_prompt(currentPlayer);
