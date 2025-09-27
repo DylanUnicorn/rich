@@ -4,14 +4,14 @@
       "index": 0,
       "name": "Q",
       "fund": 10000,
-      "credit": 0,
-      "location": 69,
+      "credit": 50,
+      "location": 28,
       "alive": true,
       "prop": {
         "bomb": 0,
-        "barrier": 0,
+        "barrier": 1,
         "robot": 0,
-        "total": 0
+        "total": 1
       },
       "buff": {
         "god": 0,
@@ -22,7 +22,7 @@
     {
       "index": 1,
       "name": "A",
-      "fund": 9000,
+      "fund": 10000,
       "credit": 0,
       "location": 0,
       "alive": true,
@@ -46,8 +46,8 @@
     "barrier": []
   },
   "game": {
-    "now_player": 0,
-    "next_player": 1,
+    "now_player": 1,
+    "next_player": 0,
     "ended": false,
     "winner": -1
   }
