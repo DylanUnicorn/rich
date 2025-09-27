@@ -24,7 +24,7 @@
       "name": "A",
       "fund": 10000,
       "credit": 0,
-      "location": 0,
+      "location": 8,
       "alive": true,
       "prop": {
         "bomb": 0,

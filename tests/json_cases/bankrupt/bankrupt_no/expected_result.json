@@ -21,6 +21,7 @@
     }, {
       "index": 1,
       "name": "A",
+      "fund":0,
       "credit": 0,
       "location": 1,
       "alive": true,

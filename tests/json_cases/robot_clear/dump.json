@@ -3,7 +3,7 @@
     {
       "index": 0,
       "name": "Q",
-      "fund": 10100,
+      "fund": 10000,
       "credit": 0,
       "location": 0,
       "alive": true,
@@ -13,30 +13,32 @@
         "robot": 0,
         "total": 0
       },
-      "buff":{
+      "buff": {
         "god": 0,
         "prison": 0,
         "hospital": 0
       }
-    }, {
+    },
+    {
       "index": 1,
       "name": "A",
-      "fund":-100,
-      "credit":0,
-      "location": 1,
-      "alive": false,
+      "fund": 10000,
+      "credit": 0,
+      "location": 0,
+      "alive": true,
       "prop": {
         "bomb": 0,
         "barrier": 0,
         "robot": 0,
         "total": 0
       },
-      "buff":{
+      "buff": {
         "god": 0,
         "prison": 0,
         "hospital": 0
       }
-    }, {
+    },
+    {
       "index": 2,
       "name": "S",
       "fund": 10000,
@@ -54,7 +56,8 @@
         "prison": 0,
         "hospital": 0
       }
-    }, {
+    },
+    {
       "index": 3,
       "name": "J",
       "fund": 10000,
@@ -75,18 +78,14 @@
     }
   ],
   "houses": {
-    "1": {
-      "owner": "Q",
-      "level": 0
-    }
   },
-  "placed_prop":{
-    "bomb": [],
-    "barrier": []
+  "placed_prop": {
+    "bomb": [11, 69, 67, 65, 63, 61, 59],
+    "barrier": [12, 68, 66, 64, 62, 60, 58]
   },
   "game": {
-    "now_player": 2,
-    "next_player": 3,
+    "now_player": 0,
+    "next_player": 1,
     "ended": false,
     "winner": -1
   }

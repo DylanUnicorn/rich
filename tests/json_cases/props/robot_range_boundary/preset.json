@@ -9,6 +9,6 @@
      "buff": {"god": 0, "prison": 0, "hospital": 0}
     }
   ],
-  "placed_prop": {"bomb": [10,11], "barrier": [10,11]},
+  "placed_prop": {"bomb": [10], "barrier": [10,11]},
   "game": {"now_player": 0}
 }

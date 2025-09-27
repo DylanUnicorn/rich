@@ -78,13 +78,7 @@
     }
   ],
   "houses": {
-    "1": { "owner": "Q", "level": 0 },
-    "3": { "owner": "A", "level": 0 },
-    "5": { "owner": "A", "level": 1 },
-    "30": { "owner": "A", "level": 0 },
-    "60": { "owner": "A", "level": 0 },
-    "50": { "owner": "A", "level": 3 },
-    "40": { "owner": "A", "level": 2 }
+    "1": { "owner": "Q", "level": 0 }
   },
   "placed_prop": {
     "bomb": [],
