@@ -10,8 +10,8 @@
       "prop": {
         "bomb": 0,
         "barrier": 0,
-        "robot": 1,
-        "total": 1
+        "robot": 0,
+        "total": 0
       },
       "buff": {
         "god": 0,
