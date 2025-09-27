@@ -204,7 +204,30 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     int j = find_place(map, nextPos);
                     if(map[j].type == 'F'){
                         printf("你遇见了天降财神，你太幸运啦！\n");
-                        map[j].type = '0'; // Consume bomb
+                        god_used = true;
+                        currentPlayer->god = true;
+                        currentPlayer->god_bless_days += 5;
+                        if(map[j].id == 0 ){
+                            map[j].type = 'S'; // 恢复为开始
+                        }
+                        else if(map[j].id == 14 || map[j].id == 63 || 
+                                map[j].id == 49){
+                            map[j].type = 'P'; // 恢复为公园
+                        }
+                        else if(map[j].id == 35){
+                            map[j].type = 'G'; // 恢复为礼品屋
+                        }
+                        else if(map[j].id == 28){
+                            map[j].type = 'T'; // 恢复为道具屋
+                        }
+                        else if(map[j].id == 64 || map[j].id == 65 || 
+                                map[j].id == 66 || map[j].id == 67 || 
+                                map[j].id == 68 || map[j].id == 69){
+                            map[j].type = '$'; // 恢复为矿地
+                        }
+                        else{
+                            map[j].type = '0'; // 恢复为普通地块
+                        }
                         break;
                     }
                 }
@@ -431,7 +454,30 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     int j = find_place(map, nextPos);
                     if(map[j].type == 'F'){
                         printf("你遇见了天降财神，你太幸运啦！\n");
-                        map[j].type = '0'; // Consume bomb
+                        god_used = true;
+                        currentPlayer->god = true;
+                        currentPlayer->god_bless_days += 5;
+                        if(map[j].id == 0 ){
+                            map[j].type = 'S'; // 恢复为开始
+                        }
+                        else if(map[j].id == 14 || map[j].id == 63 || 
+                                map[j].id == 49){
+                            map[j].type = 'P'; // 恢复为公园
+                        }
+                        else if(map[j].id == 35){
+                            map[j].type = 'G'; // 恢复为礼品屋
+                        }
+                        else if(map[j].id == 28){
+                            map[j].type = 'T'; // 恢复为道具屋
+                        }
+                        else if(map[j].id == 64 || map[j].id == 65 || 
+                                map[j].id == 66 || map[j].id == 67 || 
+                                map[j].id == 68 || map[j].id == 69){
+                            map[j].type = '$'; // 恢复为矿地
+                        }
+                        else{
+                            map[j].type = '0'; // 恢复为普通地块
+                        }
                         break;
                     }
                 }
