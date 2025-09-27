@@ -154,27 +154,27 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
             if (param != NULL) {
                 int steps = atoi(param);
                 int turn_advanced = 0;
-                //如果接下来遇见炸弹就被送往医院
-                // for(int i = 0; i <= steps; i++){
-                //     int nextPos = (currentPlayer->position + i) % 70;
-                //     int j = find_place(map, nextPos);
-                //     if(map[j].type == '@'){
-                //         printf("你遇见了炸弹，被送往医院！\n");
-                //         InHospital(currentPlayer);
-                //         map[j].type = '0'; // Consume bomb
-                //         playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-                //         turn_advanced = 1;
-                //         break;
-                //     }
-                //     else if(map[j].type == '#'){
-                //         printf("你遇见了路障，停止前进！\n");
-                //         currentPlayer->position = (currentPlayer->position + i) % 70;
-                //         playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-                //         turn_advanced = 1;
-                //         break;
-                //     }
-                // }
-                // if (turn_advanced) continue;
+               // 如果接下来遇见炸弹就被送往医院
+                for(int i = 0; i <= steps; i++){
+                    int nextPos = (currentPlayer->position + i) % 70;
+                    int j = find_place(map, nextPos);
+                    // if(map[j].type == '@'){
+                    //     printf("你遇见了炸弹，被送往医院！\n");
+                    //     InHospital(currentPlayer);
+                    //     map[j].type = '0'; // Consume bomb
+                    //     playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                    //     turn_advanced = 1;
+                    //     break;
+                    // }
+                    if(map[j].type == '#'){
+                        printf("你遇见了路障，停止前进！\n");
+                        currentPlayer->position = (currentPlayer->position + i) % 70;
+                        playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                        turn_advanced = 1;
+                        break;
+                    }
+                }
+                if (turn_advanced) continue;
                 for(int i = 0; i <= steps; i++){
                     int nextPos = (currentPlayer->position + i) % 70;
                     int j = find_place(map, nextPos);
@@ -392,23 +392,23 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
             int roll = roll_dice();
             printf("玩家 %s 掷出了 %d 点，\n", player_getName(currentPlayer->character), roll);
 
-            // for(int i = 1; i <= roll; i++){
-            //     int nextPos = (currentPlayer->position + i) % 70;
-            //     int j = find_place(map, nextPos);
-            //     if(map[j].type == '@'){
-            //         printf("你遇见了炸弹，被送往医院！\n");
-            //         InHospital(currentPlayer);
-            //         map[j].type = '0'; // Consume bomb
-            //         playerManager_nextPlayer(&playerManager);
-            //         goto next_turn;
-            //     }
-            //     else if(map[j].type == '#'){
-            //         printf("你遇见了路障，停止前进！\n");
-            //         currentPlayer->position = nextPos;
-            //         playerManager_nextPlayer(&playerManager);
-            //         goto next_turn;
-            //     }
-            // }
+            for(int i = 1; i <= roll; i++){
+                int nextPos = (currentPlayer->position + i) % 70;
+                int j = find_place(map, nextPos);
+                // if(map[j].type == '@'){
+                //     printf("你遇见了炸弹，被送往医院！\n");
+                //     InHospital(currentPlayer);
+                //     map[j].type = '0'; // Consume bomb
+                //     playerManager_nextPlayer(&playerManager);
+                //     goto next_turn;
+                // }
+                  if(map[j].type == '#'){
+                    printf("你遇见了路障，停止前进！\n");
+                    currentPlayer->position = nextPos;
+                    playerManager_nextPlayer(&playerManager);
+                    goto next_turn;
+                }
+            }
             for(int i = 0; i <= roll; i++){
                     int nextPos = (currentPlayer->position + i) % 70;
                     int j = find_place(map, nextPos);
@@ -477,7 +477,6 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 }
             }
             else{
-                printf("此处为特殊地块，触发相应事件。\n");
                 game_handle_cell_event(currentPlayer, &map[i], &playerManager);
             }
             
@@ -510,7 +509,7 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
         else {
             printf("未知命令，请输入 help 查看帮助。\n");
         }
-        //next_turn:;
+        next_turn:;
     }
 }
 
