@@ -47,6 +47,12 @@ void game_handle_cell_event(Player* player, Structure* cell, PlayerManager* play
             }
             game_handle_tool_shop(player);
             break;
+        case '$':
+            printf("此处为矿地。\n");
+            player->points += cell->points;
+            printf("你获得了 %d 点数！\n", cell->points);
+            break;
+        
         default:
             // Handle other cell types if necessary
             break;
