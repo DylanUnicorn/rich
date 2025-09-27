@@ -91,7 +91,7 @@ int load_game_from_json(const char* filename, PlayerManager* pm, Structure* stru
                 //加载基础信息
                 pm->players[i].money = cJSON_GetObjectItem(player_json, "fund")->valueint;
                 printf("%d---money:%d\n",i,cJSON_GetObjectItem(player_json, "fund")->valueint);
-                pm->players[i].active = cJSON_GetObjectItem(player_json, "alive")->valueint;
+                pm->players[i].bankruptcy = 1 - cJSON_GetObjectItem(player_json, "alive")->valueint;
                 pm->players[i].position = cJSON_GetObjectItem(player_json, "location")->valueint;
                 pm->players[i].points = cJSON_GetObjectItem(player_json, "credit")->valueint;
                 //加载道具
@@ -203,7 +203,7 @@ cJSON* player_to_json(const Player* p, int idx) {
 	cJSON_AddNumberToObject(obj, "fund", p->money);
 	cJSON_AddNumberToObject(obj, "credit", p->points);
 	cJSON_AddNumberToObject(obj, "location", p->position);
-	cJSON_AddBoolToObject(obj, "alive", p->active);
+	cJSON_AddBoolToObject(obj, "alive", p->bankruptcy ? 0 : 1);
 	// 输出道具信息
 	cJSON* prop_obj = cJSON_CreateObject();
 	cJSON_AddNumberToObject(prop_obj, "bomb", p->tool.bomb);
