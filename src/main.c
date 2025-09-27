@@ -236,7 +236,6 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     }
                 }
                 else{
-                    printf("此处为特殊地块，触发相应事件。\n");
                     game_handle_cell_event(currentPlayer, &map[i], &playerManager);
                 }
                 if (!turn_advanced) {
@@ -327,8 +326,7 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
         //                     continue;
         //                 }
         //                 currentPlayer->tool.bomb--;
-        //                 currentPlayer->tool.total--;
-                        
+        //                 currentPlayer->tool.total--;              
         //                 map[i].type = '@'; // 设置为炸弹
         //             }
         //             else{
@@ -455,7 +453,6 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 }
             }
             else{
-                printf("此处为特殊地块，触发相应事件。\n");
                 game_handle_cell_event(currentPlayer, &map[i], &playerManager);
             }
             
