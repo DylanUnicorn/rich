@@ -175,6 +175,15 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 //     }
                 // }
                 // if (turn_advanced) continue;
+                for(int i = 0; i <= steps; i++){
+                    int nextPos = (currentPlayer->position + i) % 70;
+                    int j = find_place(map, nextPos);
+                    if(map[j].type == 'F'){
+                        printf("你遇见了天降财神，你太幸运啦！\n");
+                        map[j].type = '0'; // Consume bomb
+                        break;
+                    }
+                }
                 currentPlayer->position = (currentPlayer->position + steps) % 70; // 假设地图有70个位置
                 if(currentPlayer->position < 0) currentPlayer->position += 70;  
                 printf("你移动到了位置 %d\n", currentPlayer->position);
@@ -237,8 +246,7 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     }
                 }
                 else{
-                    printf("此处为特殊地块，触发相应事件。\n");
-                    game_handle_cell_event(currentPlayer, &map[i], &playerManager);
+                    game_handle_cell_event(currentPlayer, &map[i], &playerManager, &god_used);
                 }
                 if (!turn_advanced) {
                     playerManager_nextPlayer(&playerManager);
@@ -334,8 +342,7 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
         //                     continue;
         //                 }
         //                 currentPlayer->tool.bomb--;
-        //                 currentPlayer->tool.total--;
-                        
+        //                 currentPlayer->tool.total--;              
         //                 map[i].type = '@'; // 设置为炸弹
         //             }
         //             else{
@@ -402,7 +409,15 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
             //         goto next_turn;
             //     }
             // }
-            
+            for(int i = 0; i <= roll; i++){
+                    int nextPos = (currentPlayer->position + i) % 70;
+                    int j = find_place(map, nextPos);
+                    if(map[j].type == 'F'){
+                        printf("你遇见了天降财神，你太幸运啦！\n");
+                        map[j].type = '0'; // Consume bomb
+                        break;
+                    }
+                }
             currentPlayer->position = (currentPlayer->position + roll) % 70;
             printf(" 移动到位置 %d\n", currentPlayer->position);
              
@@ -463,7 +478,7 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
             }
             else{
                 printf("此处为特殊地块，触发相应事件。\n");
-                game_handle_cell_event(currentPlayer, &map[i], &playerManager);
+                game_handle_cell_event(currentPlayer, &map[i], &playerManager, &god_used);
             }
             
             playerManager_nextPlayer(&playerManager);
