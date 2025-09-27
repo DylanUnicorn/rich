@@ -184,6 +184,16 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                         }
                         currentPlayer->position = (currentPlayer->position + i) % 70;
                         playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                        if (playerManager.currentPlayerIndex == 0) {
+                        round_count++;
+                        // 财神冷却机制
+                        if (god_pos == -1 && game_turns > 0) {
+                            game_turns--;
+                            printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", game_turns);
+                        }
+                        game_handle_turn(&god_pos, &god_turn, &god_used, &game_turns, map, &playerManager);
+                        printf("当前到达 %d 回合\n", round_count);
+                    }
                         turn_advanced = 1;
                         break;
                     }
@@ -403,6 +413,16 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     }
                     currentPlayer->position = nextPos;
                     playerManager_nextPlayer(&playerManager);
+                    if (playerManager.currentPlayerIndex == 0) {
+                        round_count++;
+                        // 财神冷却机制
+                        if (god_pos == -1 && game_turns > 0) {
+                            game_turns--;
+                            printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", game_turns);
+                        }
+                        game_handle_turn(&god_pos, &god_turn, &god_used, &game_turns, map, &playerManager);
+                        printf("当前到达 %d 回合\n", round_count);
+                    }
                     goto next_turn;
                 }
             }

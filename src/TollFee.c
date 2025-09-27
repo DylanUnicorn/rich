@@ -15,10 +15,6 @@ void GetTollFee(Player *player, Structure *map){
             printf("%s在医院中，免收过路费。\n",player_getName(map->owner->character));
             return;
         }
-        else if(map->owner->in_prison){
-            printf("%s在监狱中，免收过路费。\n",player_getName(map->owner->character));
-            return;
-        }
         else{
             printf("你需要支付过路费。\n");
         player->money -= (map->level+1)*(map->money)*0.5;
