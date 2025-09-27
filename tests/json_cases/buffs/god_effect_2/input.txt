@@ -1,16 +1,21 @@
 step 1
+n
 step 8
 n
 step 1
+n
 step 0
 n
 step 1
+n
 step 0
 n
 step 1
+n
 step 0
 n
 step 1
+n
 step 0
 n
 dump
