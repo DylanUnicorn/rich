@@ -59,7 +59,6 @@ void god_disappear(Structure* map, int* god_pos, int* god_turn) {
 }
 
 void god_refresh(Structure* map, PlayerManager* pm, int* god_pos, int* god_turn, bool* god_used, int* game_turns) {
-    srand((unsigned int)time(NULL));
     int new_god_pos = rand() % 70;
     while (1) {
         int occupied = 0;
@@ -68,9 +67,11 @@ void god_refresh(Structure* map, PlayerManager* pm, int* god_pos, int* god_turn,
             if (p->position == new_god_pos) {
                 occupied = 1;
                 break;
-            } else if (map[find_place(map, new_god_pos)].tool != 0) {
-                occupied = 1;
-                break;
+            } else {
+                int idx = find_place(map, new_god_pos);
+                if (map[idx].tool != 0) { occupied = 1; break; }
+                char t = map[idx].type;
+                if (t == 'G' || t == 'T' || t == '@' || t == '#') { occupied = 1; break; }
             }
         }
         if (!occupied) break;

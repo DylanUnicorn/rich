@@ -447,3 +447,5 @@ coverage/
 *.tar.gz
 *.deb
 *.rpm
+
+dump.json

@@ -1,9 +1,0 @@
-step 1
-y
-step 1
-y
-step 1
-y
-step 1
-y
-dump

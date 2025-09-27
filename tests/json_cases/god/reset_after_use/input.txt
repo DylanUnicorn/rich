@@ -1,0 +1,4 @@
+# move to the god at location 2
+step 2
+# end turn to process reset
+dump

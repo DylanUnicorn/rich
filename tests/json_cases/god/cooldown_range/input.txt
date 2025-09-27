@@ -1,0 +1,4 @@
+# One player: each step ends a full round
+step 0
+# god spawns immediately (cooldown 0)
+dump

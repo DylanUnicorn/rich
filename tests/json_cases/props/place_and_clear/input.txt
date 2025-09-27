@@ -1,4 +1,2 @@
-block 3
-bomb 5
 robot
 dump

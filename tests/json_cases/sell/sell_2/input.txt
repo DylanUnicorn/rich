@@ -1,9 +1,13 @@
 sell 15
 step 0
+n
 sell 30
 step 0
+n
 sell 45
 step 0
+n
 sell 60
 step 0
+n
 dump
