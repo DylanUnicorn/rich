@@ -5,7 +5,7 @@
 
 #define CELL_NUMS 100
 int  g_ended = 0, g_winner = -1;
-//入口函数，开始测试模式，初始化玩家，地图
+//入口函数，开始测试模式，设置玩家，地图
 //使用BeginTestMode( dir , &playerManager, map);读取dir下的preset.json文件
 //解析到playerManager和map中
 //使用SetGameEnded(ended,winner);设置游戏结束状态
@@ -27,6 +27,7 @@ PlayerCharacter get_character_enum(const char* name) {
     else if (strcmp(name, "A") == 0) return ATURBER;
     else if (strcmp(name, "S") == 0) return SUN_XIAOMEI;
     else if (strcmp(name, "J") == 0) return JIN_BEIBEI;
+    else return QIAN_FUREN; //默认钱夫人
 }
 
 Player* get_map_owner(const char* name,PlayerManager* pm) {
@@ -34,7 +35,9 @@ Player* get_map_owner(const char* name,PlayerManager* pm) {
         if(pm->players[i].character == get_character_enum(name)){
             return &pm->players[i];
         }
+        else return NULL;
     }
+    return NULL;
 }
 
 const char* get_name_from_enum(PlayerCharacter character) {
@@ -121,6 +124,7 @@ int load_game_from_json(const char* filename, PlayerManager* pm, Structure* stru
                 }
             }
         }
+
     }
     printf("玩家信息加载完成\n");
 
@@ -188,6 +192,7 @@ int load_game_from_json(const char* filename, PlayerManager* pm, Structure* stru
     //释放 JSON 对象
     cJSON_Delete(root);
     printf("预设文件加载完成\n");
+    return 0;
 }
 
 cJSON* player_to_json(const Player* p, int idx) {
