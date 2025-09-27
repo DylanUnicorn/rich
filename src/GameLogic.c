@@ -52,7 +52,6 @@ void god_disappear(Structure* map, int* god_pos, int* god_turn) {
         }
         else{
             map[find_place(map, *god_pos)].type = '0'; // 恢复为普通地块
-            
         }
         *god_pos = -1;
         *god_turn = 0;
