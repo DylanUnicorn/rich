@@ -26,12 +26,12 @@ void game_handle_cell_event(Player* player, Structure* cell, PlayerManager* play
     if (cell == NULL || player == NULL || player_manager == NULL) return;
 
     switch (cell->type) {
-        case 'H': // Hospital
-         printf("此处为医院。\n");  
-        break;
-        case 'P': // Prison
-            game_handle_jail(player);
-            break;
+        // case 'H': // Hospital
+        //  printf("此处为医院。\n");  
+        // break;
+        // case 'P': // Prison
+        //     game_handle_jail(player);
+        //     break;
         case 'G': // Gift House
             game_handle_gift_house(player);
 
@@ -52,7 +52,9 @@ void game_handle_cell_event(Player* player, Structure* cell, PlayerManager* play
             player->points += cell->points;
             printf("你获得了 %d 点数！\n", cell->points);
             break;
-        
+        case 'P':
+            printf("此处为公园。\n");
+            break;
         default:
             // Handle other cell types if necessary
             break;

@@ -6,7 +6,7 @@ void propHouse_init() {
     printf("欢迎来到道具屋，请选择您需要的道具：\n");
     printf("1. 路障 (价格: 50点)\n");
     printf("2. 机器娃娃 (价格: 30点)\n");
-    printf("3. 炸弹 (价格: 50点)\n");
+    //printf("3. 炸弹 (价格: 50点)\n");
     printf("请输入要购买的道具编号(或输入f退出): ");
     
 }
@@ -69,26 +69,26 @@ void player_getintoPropHouse(Player* currentPlayer) {
                     break;
                 }
             }
-        } else if (choice == '3') {
-            if (currentPlayer->points >= 50 && currentPlayer->tool.total < 10) {
-                currentPlayer->tool.bomb++;
-                currentPlayer->points -= 50;
-                currentPlayer->tool.total++;
-                printf("您已购买了一个炸弹。剩余点数: %d\n", currentPlayer->points);
-            } 
-            else if(currentPlayer->tool.total>=10){
-                printf("道具数量已达上限，无法购买更多道具。\n");
-            }
-            else
-            {
-                printf("点数不足，无法购买路障。\n");
-                if(currentPlayer->points<30){
-                    printf("您的点数不足，无法购买任何道具，建议您先退出道具屋。\n");
-                    /// 提前接受一个enter
-                    getchar();
-                    break;
-                }
-            }
+        // } else if (choice == '3') {
+        //     if (currentPlayer->points >= 50 && currentPlayer->tool.total < 10) {
+        //         currentPlayer->tool.bomb++;
+        //         currentPlayer->points -= 50;
+        //         currentPlayer->tool.total++;
+        //         printf("您已购买了一个炸弹。剩余点数: %d\n", currentPlayer->points);
+        //     } 
+        //     else if(currentPlayer->tool.total>=10){
+        //         printf("道具数量已达上限，无法购买更多道具。\n");
+        //     }
+        //     else
+        //     {
+        //         printf("点数不足，无法购买路障。\n");
+        //         if(currentPlayer->points<30){
+        //             printf("您的点数不足，无法购买任何道具，建议您先退出道具屋。\n");
+        //             /// 提前接受一个enter
+        //             getchar();
+        //             break;
+        //         }
+        //     }
         } else {
             printf("无效选择，请重新选择。\n");  
         }
