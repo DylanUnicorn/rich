@@ -3,6 +3,11 @@
 #include "Structure.h"
 #include "prophouse.h"
 #include "gifthouse.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+# include"map.h"
+# include"Tool.h"
 void game_handle_jail(Player* player) {
     if (player == NULL) return;
     player->in_prison = true;
@@ -22,6 +27,65 @@ void game_handle_gift_house(Player* player) {
     player_getintoGiftHouse(player);
 }
 
+// 财神相关逻辑封装
+void god_disappear(Structure* map, int* god_pos, int* god_turn) {
+    if (*god_pos != -1) {
+        printf("财神消失了！位置：%d\n", *god_pos);
+        map[find_place(map, *god_pos)].tool = 0;
+        *god_pos = -1;
+        *god_turn = 0;
+    }
+}
+
+void god_refresh(Structure* map, PlayerManager* pm, int* god_pos, int* god_turn, bool* god_used, int* game_turns) {
+    srand((unsigned int)time(NULL));
+    int new_god_pos = rand() % 70;
+    while (1) {
+        int occupied = 0;
+        for (int i = 0; i < pm->playerCount; i++) {
+            Player* p = &pm->players[i];
+            if (p->position == new_god_pos) {
+                occupied = 1;
+                break;
+            } else if (map[find_place(map, new_god_pos)].tool != 0) {
+                occupied = 1;
+                break;
+            }
+        }
+        if (!occupied) break;
+        new_god_pos = rand() % 70;
+        
+    }
+    *god_pos = new_god_pos;
+    map[find_place(map, *god_pos)].tool = 1;
+    printf("财神已出现，位置 %d ！[DEBUG] tool已设为1\n", *god_pos);
+    *game_turns = 0;
+    *god_turn = 1;
+    *god_used = 0;
+}
+
+void game_handle_turn(int* god_pos, int* god_turn, bool* god_used, int* game_turns, Structure* map, PlayerManager* playermanager) {
+    (*game_turns)++; // 计数游戏回合数
+    printf("[DEBUG] game_turns=%d, god_turn=%d, god_pos=%d, god_used=%d\n", *game_turns, *god_turn, *god_pos, *god_used);
+    if(!*god_used && *god_pos != -1 ){
+        (*god_turn)++;
+        printf("[DEBUG] 财神未被使用，god_turn++，当前god_turn=%d\n", *god_turn);
+        if (*god_turn == 5+1){
+            god_disappear(map, god_pos, god_turn);
+            *game_turns = 0;
+            } 
+        }
+        else if(*god_used){
+            printf("[DEBUG] 财神被使用，重置god_used和god_turn\n");
+            *god_used = false;
+            *god_turn = 0;
+        }
+    if (*game_turns == 10 && *god_pos == -1) {
+        *game_turns = 0;
+        god_refresh(map, playermanager, god_pos, god_turn, god_used, game_turns);
+    }
+    
+}
 void game_handle_cell_event(Player* player, Structure* cell, PlayerManager* player_manager){
     if (cell == NULL || player == NULL || player_manager == NULL) return;
 
