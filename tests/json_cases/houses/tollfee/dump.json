@@ -1,0 +1,55 @@
+{
+  "players": [
+    {
+      "index": 0,
+      "name": "Q",
+      "fund": 9900,
+      "credit": 0,
+      "location": 6,
+      "alive": true,
+      "prop": {
+        "bomb": 0,
+        "barrier": 0,
+        "robot": 0,
+        "total": 0
+      },
+      "buff": {
+        "god": 0,
+        "prison": 0,
+        "hospital": 0
+      }
+    },
+    {
+      "index": 1,
+      "name": "A",
+      "fund": 9900,
+      "credit": 0,
+      "location": 5,
+      "alive": true,
+      "prop": {
+        "bomb": 0,
+        "barrier": 0,
+        "robot": 0,
+        "total": 0
+      },
+      "buff": {
+        "god": 0,
+        "prison": 0,
+        "hospital": 0
+      }
+    }
+  ],
+  "houses": {
+    "5": { "owner": "Q", "level": 0 }
+  },
+  "placed_prop": {
+    "bomb": [],
+    "barrier": []
+  },
+  "game": {
+    "now_player": 0,
+    "next_player": 1,
+    "ended": false,
+    "winner": -1
+  }
+}

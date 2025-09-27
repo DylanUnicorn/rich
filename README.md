@@ -121,6 +121,7 @@ find src include -name "*.cpp" -o -name "*.h" | xargs clang-format -i
 - 测试覆盖率目标：90%+
 - 使用GoogleTest框架
 - 测试文件命名规范：`test_<module_name>.cpp`
+- 测试记录已经放置在了：[测试记录](./docs/TESTED_FEATURES.md)
 
 ### 持续集成
 

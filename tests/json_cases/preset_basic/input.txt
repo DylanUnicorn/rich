@@ -1,0 +1,3 @@
+# commands only since preset.json exists
+step 4
+dump

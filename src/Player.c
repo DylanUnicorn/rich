@@ -108,6 +108,7 @@ bool playerManager_addPlayer(PlayerManager* manager, PlayerCharacter character, 
     /* Add new player */
     player_init(&manager->players[manager->playerCount], character, initialMoney);
     manager->playerCount++;
+    manager->playerIndex++;
     
     return true;
 }
@@ -158,6 +159,7 @@ void playerManager_reset(PlayerManager* manager) {
     if (manager == NULL) return;
     
     manager->playerCount = 0;
+    manager->playerIndex = 0;
     manager->currentPlayerIndex = 0;
 }
 
@@ -169,13 +171,17 @@ Player* playerManager_getPlayer(PlayerManager* manager, int index) {
 
 bool playerManager_isGameWon(const PlayerManager* manager) {
     if (manager == NULL) return false;   
+    //printf("当前玩家数量: %d\n", manager->playerIndex);
     // 如果只剩下1个玩家，游戏胜利
-    return manager->playerCount == 1;
+    return manager->playerIndex == 1;
 }
 
 Player* playerManager_getWinner(PlayerManager* manager) {
-    if (manager == NULL || manager->playerCount != 1) return NULL;
-    
-    // 返回最后剩下的玩家
-    return &manager->players[0];
+    if (manager == NULL || manager->playerIndex != 1) return NULL;
+    for(int i = 0; i < manager->playerCount; i++) {
+        if (!manager->players[i].bankruptcy) {
+            return &manager->players[i];
+        }
+    }
+    return NULL;
 }

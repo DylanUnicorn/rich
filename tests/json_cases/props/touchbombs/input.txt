@@ -1,0 +1,3 @@
+bomb 5
+step 5
+dump

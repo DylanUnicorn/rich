@@ -28,39 +28,17 @@ static int path_is_dir(const char* p);
 static void json_escape_string(FILE* f, const char* s);
 static char char_from_player(PlayerCharacter pc);
 static void write_dump_json(const char* case_dir, Structure* map, PlayerManager* pm);
-static int is_digits_1_4_unique(const char* s);
-static void add_players_from_selection(PlayerManager* pm, const char* sel, int initialMoney);
-static int run_test_mode(const char* case_dir);
+static void load_preset(const char* json, Structure* map, PlayerManager* pm);
+static char* read_file_all(const char* path, long* out_len);
+
 #define MAX_INPUT 100
 
 void run_test_helloworld() {
     printf("Hello World!\n");
 }
 
-void run_command_mode() {
-    char line[256];
-    
-    while (fgets(line, sizeof(line), stdin)) {
-        /* Remove newline character */
-        line[strcspn(line, "\n")] = 0;
-        
-        if (strlen(line) == 0) continue;
-        
-        if (strcmp(line, "testhelloworld") == 0) {
-            printf("Hello World!\n");
-        } else if (strcmp(line, "dump") == 0) {
-            /* For now, just output a simple dump */
-            printf("system dump complete\n");
-            break;  /* Exit after dump */
-        } else {
-            printf("Unknown command: %s\n", line);
-        }
-    }
-}
-
-void run_interactive_game() {
+void run_game_loop(int is_test_mode, const char* case_dir) {
     char input[MAX_INPUT];
-    printf("=== Rich Game ===\n");
     Structure map[HEIGHT * WIDTH];
     init_map(map);
     GameConfig config;
@@ -69,12 +47,32 @@ void run_interactive_game() {
     /* Initialize structures */
     gameConfig_init(&config);
     playerManager_init(&playerManager);
+
+    int use_preset = 0;
+    if (is_test_mode && case_dir) {
+        char preset_path[1024];
+        snprintf(preset_path, sizeof(preset_path), "%s/%s", case_dir, "preset.json");
+        long preset_len = 0;
+        char* preset_json = read_file_all(preset_path, &preset_len);
+        if (preset_json) {
+            use_preset = 1;
+            load_preset(preset_json, map, &playerManager);
+            free(preset_json);
+        }
+    }
+
+    if (!use_preset) {
+        /* Set initial money */
+        gameConfig_promptForInitialMoney(&config);
+        
+        /* Select players */
+        if (!gameConfig_promptForPlayerSelection(&config, &playerManager)) {
+            printf("游戏初始化失败！\n");
+            return;
+        }
+    }
     
-    /* Set initial money */
-    gameConfig_promptForInitialMoney(&config);
-    
-    /* Select players */
-    if (gameConfig_promptForPlayerSelection(&config, &playerManager)) {
+    if (!is_test_mode) {
         printf("\nGame initialization completed!\n");
         printf("Participating players:\n");
         
@@ -94,89 +92,95 @@ void run_interactive_game() {
         if (currentPlayer != NULL) {
             printf("\nCurrent turn: %s\n", player_getName(currentPlayer->character));
         }
+    }
 
-         // 游戏主循环
-        while (1) {
-            Player* currentPlayer = playerManager_getCurrentPlayer(&playerManager);
-            if (currentPlayer == NULL) break;
+    // 游戏主循环
+    while (1) {
+        Player* currentPlayer = playerManager_getCurrentPlayer(&playerManager);
+        if (currentPlayer == NULL) break;
+        
+        if (!is_test_mode) {
             print_map(map, &playerManager);
-
-            // 显示带颜色的提示符
             ui_display_prompt(currentPlayer);
+        }
 
-            // 这里处理命令，比如 roll, query, help, quit 等*/
-            // 读取整行输入
-            if(currentPlayer->in_hospital){
-                printf("你在医院，无法进行其他操作，回车结束回合。\n");
-                currentPlayer->hospital_days--;
-                if(currentPlayer->hospital_days <= 0)
-                    currentPlayer->in_hospital = false;
-                playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-            }
-            else if(currentPlayer->in_prison){
-                printf("你在监狱，无法进行其他操作，回车结束回合。\n");
-                currentPlayer->prison_days--;
-                if(currentPlayer->prison_days <= 0)
-                    currentPlayer->in_prison = false;
-                playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-            }
+        if (currentPlayer->in_hospital) {
+            if (!is_test_mode) printf("你在医院，无法进行其他操作，回车结束回合。\n");
+            HospitalDayReduceOne(currentPlayer);
+            playerManager_nextPlayer(&playerManager);
+            // In both modes, consume a line of input to simulate "press enter"
+            if (fgets(input, MAX_INPUT, stdin) == NULL) break;
+            if (!is_test_mode) ui_clear_screen();
+            continue;
+        }
+        if (currentPlayer->in_prison) {
+            if (!is_test_mode) printf("你在监狱，无法进行其他操作，回车结束回合。\n");
+            PrisonDayReduceOne(currentPlayer);
+            playerManager_nextPlayer(&playerManager);
+            if (fgets(input, MAX_INPUT, stdin) == NULL) break;
+            if (!is_test_mode) ui_clear_screen();
+            continue;
+        }
 
-            if (fgets(input, MAX_INPUT, stdin) == NULL) {
-                break;
-            }
-            ui_clear_screen();
-            // 移除换行符
-            input[strcspn(input, "\n")] = 0;
+        if (fgets(input, MAX_INPUT, stdin) == NULL) {
+            if (is_test_mode) write_dump_json(case_dir, map, &playerManager);
+            break;
+        }
+        if (!is_test_mode) ui_clear_screen();
+        
+        input[strcspn(input, "\n")] = 0;
 
-            // 分割输入
-            char *cmd = strtok(input, " ");
-            char *param = strtok(NULL, " ");
+        char *cmd = strtok(input, " ");
+        char *param = strtok(NULL, " ");
 
-            if (cmd == NULL) {
-                continue; // 空输入
-            }
-            
-            if (strcmp(cmd, "quit") == 0) {
-                printf("游戏结束。\n");
-                break;
-            }
-            else if (strcmp(cmd, "step") == 0) {
-                if (param != NULL) {
-                    int steps = atoi(param);
-                    //如果接下来遇见炸弹就被送往医院
-                    for(int i = 0; i <= steps; i++){
-                        int nextPos = (currentPlayer->position + i) % 70;
-                        int j = find_place(map, nextPos);
-                        if(map[j].type == '@'){
-                            printf("你遇见了炸弹，被送往医院！\n");
-                            InHospital(currentPlayer);
-                            playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-                            break;
-                        }
-                        else if(map[j].type == '#'){
-                            printf("你遇见了路障，停止前进！\n");
-                            currentPlayer->position = (currentPlayer->position + i) % 70;
-                            playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-                            break;
-                        }
+        if (cmd == NULL || strlen(cmd) == 0) continue;
+        
+        if (strcmp(cmd, "quit") == 0) {
+            if (!is_test_mode) printf("游戏结束。\n");
+            break;
+        }
+        if (is_test_mode && strcmp(cmd, "dump") == 0) {
+            write_dump_json(case_dir, map, &playerManager);
+            break;
+        }
+        else if (strcmp(cmd, "step") == 0) {
+            if (param != NULL) {
+                int steps = atoi(param);
+                int turn_advanced = 0;
+                //如果接下来遇见炸弹就被送往医院
+                for(int i = 0; i <= steps; i++){
+                    int nextPos = (currentPlayer->position + i) % 70;
+                    int j = find_place(map, nextPos);
+                    if(map[j].type == '@'){
+                        printf("你遇见了炸弹，被送往医院！\n");
+                        InHospital(currentPlayer);
+                        map[j].type = '0'; // Consume bomb
+                        playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                        turn_advanced = 1;
+                        break;
                     }
-                    currentPlayer->position = (currentPlayer->position + steps) % 70; // 假设地图有70个位置
-                    printf("你移动到了位置 %d\n", currentPlayer->position);
+                    else if(map[j].type == '#'){
+                        printf("你遇见了路障，停止前进！\n");
+                        currentPlayer->position = (currentPlayer->position + i) % 70;
+                        playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                        turn_advanced = 1;
+                        break;
+                    }
+                }
+                if (turn_advanced) continue;
+                currentPlayer->position = (currentPlayer->position + steps) % 70; // 假设地图有70个位置
+                printf("你移动到了位置 %d\n", currentPlayer->position);
 
                 int i = find_place(map, currentPlayer->position);
 
                 if(map[i].type == '0' && map[i].owner== NULL){
                     printf("此处为空地，可以购买。\n");
                     printf("是否购买此地？(y/n): ");
-                    char choice;                    
-                    if (scanf("%c", &choice) != 1) {
-                        // 处理输入错误
-                        printf("输入错误，请输入 y 或 n。\n");
-                        continue;
-                    }
-                    while (getchar() != '\n'); // 清除输入缓冲区
+                    char choice_buf[MAX_INPUT];
+                    if (fgets(choice_buf, sizeof(choice_buf), stdin) == NULL) break;
+                    char choice = choice_buf[0];
                     if (choice == 'y' || choice == 'Y') {
-                        buy_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
+                        buy_land(map + i, map[i].id, currentPlayer);
                     } 
                     else if(choice == 'n' || choice == 'N') {
                         printf("放弃购买此地。\n");
@@ -187,22 +191,18 @@ void run_interactive_game() {
                 }
                 else if(map[i].type == 'P'){
                     printf("你遇见了监狱，停止前进！\n");
-                    currentPlayer->in_prison = true;
-                    currentPlayer->prison_days = 2; // 监狱停留2天
+                    InPrison(currentPlayer, map[i]);
                     playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                    turn_advanced = 1;
                 }
                 else if(map[i].owner == currentPlayer){
                     printf("此处为你拥有的地产，可以升级或出售。\n");
                     printf("是否升级此地？(u 升级 / n 不操作): ");
-                    char choice;
-                    if (scanf(" %c", &choice) != 1) {
-                        // 处理输入错误
-                        printf("输入错误，请输入 u 或 n。\n");
-                        continue;
-                    }
-                    while (getchar() != '\n'); // 清除输入缓冲区
+                    char choice_buf[MAX_INPUT];
+                    if (fgets(choice_buf, sizeof(choice_buf), stdin) == NULL) break;
+                    char choice = choice_buf[0];
                     if (choice == 'u' || choice == 'U') {
-                        upgrade_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
+                        upgrade_land(map + i, map[i].id, currentPlayer);
                     } 
                     else if(choice == 'n' || choice == 'N'){
                         printf("放弃操作此地。\n");
@@ -213,14 +213,14 @@ void run_interactive_game() {
                 }
                 else if(map[i].owner != NULL && map[i].owner != currentPlayer){
                     printf("此处为%s的地产，你需要支付过路费。\n", player_getName(map[i].owner->character));
-                    GetTollFee(currentPlayer,&map[i],&playerManager);
+                    GetTollFee(currentPlayer,&map[i]);
                     if (playerManager_isGameWon(&playerManager)) {
                         Player* winner = playerManager_getWinner(&playerManager);
                         if (winner != NULL) {
                             printf("游戏结束！%s 获胜！\n", player_getName(winner->character));
                         }
                         break;
-                        }
+                    }
                     else{
                         printf("游戏继续。\n");
                     }
@@ -228,200 +228,187 @@ void run_interactive_game() {
                 else{
                     printf("此处为特殊地块，触发相应事件。\n");
                     game_handle_cell_event(currentPlayer, &map[i], &playerManager);
-                    //trigger_special_tile_event(map, currentPlayer);
-                } 
-                } else {
+                }
+                if (!turn_advanced) {
+                    playerManager_nextPlayer(&playerManager);
+                }
+                continue;
+            } else {
                 printf("错误: step需要指定步数\n");
-                }
-            } 
-            else if (strcmp(cmd, "help") == 0) {
-                ui_display_help();
-            }//////////////////////////////////////////////////////////////////////////////////////////
-            else if (strcmp(cmd, "bolck") == 0) {
-                if (param != NULL) {
-                    int blocks = atoi(param);
-                    if(blocks >= -10 && blocks <= 10 && blocks != 0){
-                        if(currentPlayer->tool.roadblock > 0){
-                            currentPlayer->tool.roadblock--;
-                            currentPlayer->tool.total--;
-                            int i = find_place(map, currentPlayer->position + blocks);
-                            map[i].type = '#'; // 设置为路障
-                        }
-                        else{
-                            printf("你没有路障道具，无法使用。\n");
-                            continue;
-                        }
-                    }
-                    else{
-                        printf("错误: 指令block位置参数应在-10到10之间且不为0\n");
-                        continue;
-                    }
-                }
-                else {
-                    printf("错误: 指令block需要指定位置\n");
-                }
-            } ////////////////////////////////////////////////////////////////////////////////////////
-            else if (strcmp(cmd, "bomb") == 0) {
-                if (param != NULL) {
-                    int bombs = atoi(param);
-                    if(bombs >= -10 && bombs <= 10 && bombs != 0){
-                        if(currentPlayer->tool.bomb > 0){
-                            currentPlayer->tool.bomb--;
-                            currentPlayer->tool.total--;
-                            int i = find_place(map, currentPlayer->position + bombs);
-                            map[i].type = '@'; // 设置为路障
-                        }
-                        else{
-                            printf("你没有炸弹道具，无法使用。\n");
-                            continue;
-                        }
-                    }
-                    else{
-                        printf("错误: 指令bomb位置参数应在-10到10之间且不为0\n");
-                    }
-
-                }
-                else {
-                    printf("错误: 指令bomb需要指定位置\n");
-                }
-            } //////////////////////////////////////////////////////////////////////////////////////
-            else if (strcmp(cmd, "robot") == 0) {
-                if (currentPlayer->tool.doll > 0) {
-                    currentPlayer->tool.doll--;
-                    currentPlayer->tool.total--;
-                    int i = find_place(map, currentPlayer->position);
-                    for(i = 0; i < 10; i++){
-                        map[i].type = TOOL_NONE; // 清除路障或炸弹
-                        break;
-                    }
-                }
-                else {
-                    printf("你没有机器人道具，无法使用。\n");
-                    continue;
-                }
-            } //////////////////////////////////////////////////////////////////////////////////////
-            else if (strcmp(cmd, "query") == 0) {
-                // 显示当前玩家资产
-                printf("资金：%d，点数：%d，位置：%d\n", 
-                    currentPlayer->money, currentPlayer->points, currentPlayer->position);
             }
-            else if (strcmp(cmd, "roll") == 0) {
-                //Player_use_roll_dice( currentPlayer);
-                srand(time(NULL));
-                int roll = roll_dice();
-                for(int i = 0; i <= roll; i++){
-                    int nextPos = (currentPlayer->position + i) % 70;
-                    int j = find_place(map, nextPos);
-                    if(map[j].type == '@'){
-                        printf("你遇见了炸弹，被送往医院！\n");
-                        InHospital(currentPlayer);
-                        playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-                        break;
+        } 
+        else if (strcmp(cmd, "help") == 0) {
+            ui_display_help();
+        }
+        else if (strcmp(cmd, "block") == 0 || strcmp(cmd, "bolck") == 0) {
+            if (param != NULL) {
+                int offset = atoi(param);
+                if(offset >= -10 && offset <= 10 && offset != 0){
+                    if(currentPlayer->tool.roadblock > 0){
+                        currentPlayer->tool.roadblock--;
+                        currentPlayer->tool.total--;
+                        int target_pos = (currentPlayer->position + offset + 70) % 70;
+                        int i = find_place(map, target_pos);
+                        map[i].type = '#'; // 设置为路障
                     }
-                    else if(map[j].type == '#'){
-                        printf("你遇见了路障，停止前进！\n");
-                        currentPlayer->position = (currentPlayer->position + j) % 70;
-                        playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-                        break;
-                    }
-                }
-                printf("玩家 %s 掷出了 %d 点，\n", player_getName(currentPlayer->character), roll);
-                currentPlayer->position = (currentPlayer->position + roll) % 70; // 假设地图有70个位置
-                printf(" 移动到位置 %d\n", currentPlayer->position);
-                // 掷骰子逻辑
-                printf("（此处掷骰子...）\n");
-                 
-                int i = find_place(map, currentPlayer->position);
-
-                if(map[i].type == '0' && map[i].owner== NULL){
-                    printf("此处为空地，可以购买。\n");
-                    printf("是否购买此地？(y/n): ");
-                    char choice;
-                    //scanf(" %c", &choice);
-                    if (scanf(" %c", &choice) != 1) {
-                        // 处理输入错误
-                        printf("输入错误，请输入 y 或 n。\n");
-                        continue;
-                    }
-                    while (getchar() != '\n'); // 清除输入缓冲区
-                    if (choice == 'y' || choice == 'Y') {
-                        buy_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
-                    } 
-                    else if(choice == 'n' || choice == 'N') {
-                        printf("放弃购买此地。\n");
-                    }
-                    else {
-                        printf("错误指令，输入help寻求帮助。\n");
-                    }
-                }
-                else if(map[i].type == 'P'){
-                    printf("你遇见了监狱，停止前进！\n");
-                    currentPlayer->in_prison = true;
-                    currentPlayer->prison_days = 2; // 监狱停留2天
-                    playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-                }
-                else if(map[i].owner == currentPlayer){
-                    printf("此处为你拥有的地产，可以升级或出售。\n");
-                    printf("是否升级或出售此地？(u 升级 / s 出售 / n 不操作): ");
-                    char choice;
-                    if (scanf(" %c", &choice) != 1) {
-                        // 处理输入错误
-                        printf("输入错误，请输入 u 或 n。\n");
-                        continue;
-                    }
-                    while (getchar() != '\n'); // 清除输入缓冲区
-                    if (choice == 'u' || choice == 'U') {
-                        upgrade_land(map + currentPlayer->position, currentPlayer->position, currentPlayer);
-                    } 
-                    else if(choice == 'n' || choice == 'N'){
-                        printf("放弃操作此地。\n");
-                    }
-                    else {
-                        printf("错误指令，输入help寻求帮助。\n");
-                    }
-                }
-                else if(map[i].owner != NULL && map[i].owner != currentPlayer){
-                    printf("此处为%s的地产，", player_getName(map[i].owner->character));
-                    GetTollFee(currentPlayer,&map[i],&playerManager);
-                    if (playerManager_isGameWon(&playerManager)) {
-                        Player* winner = playerManager_getWinner(&playerManager);
-                        if (winner != NULL) {
-                            printf("游戏结束！%s 获胜！\n", player_getName(winner->character));
-                        }
-                        break;
-                        }
                     else{
-                        printf("游戏继续。\n");
+                        printf("你没有路障道具，无法使用。\n");
                     }
                 }
                 else{
-                    printf("此处为特殊地块，触发相应事件。\n");
-                    game_handle_cell_event(currentPlayer, &map[i], &playerManager);
-                }
-                
-                playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-            } 
-            else if (strcmp(cmd, "sell") == 0) {
-                if (param != NULL) {
-                    int pos = atoi(param);
-                    if(pos >= 0 && pos <= 69){
-                        sell_land(map, pos, currentPlayer);
-                    }
-                    else{
-                        printf("错误: 指令sell位置参数应在0到69之间\n");
-                    }
-                }
-                else {
-                    printf("错误: 指令sell需要指定位置\n");
+                    printf("错误: 指令block位置参数应在-10到10之间且不为0\n");
                 }
             }
             else {
-                printf("未知命令，请输入 help 查看帮助。\n");
+                printf("错误: 指令block需要指定位置\n");
             }
         }
-    }
-    else {
-        printf("游戏初始化失败！\n");
+        else if (strcmp(cmd, "bomb") == 0) {
+            if (param != NULL) {
+                int offset = atoi(param);
+                if(offset >= -10 && offset <= 10 && offset != 0){
+                    if(currentPlayer->tool.bomb > 0){
+                        currentPlayer->tool.bomb--;
+                        currentPlayer->tool.total--;
+                        int target_pos = (currentPlayer->position + offset + 70) % 70;
+                        int i = find_place(map, target_pos);
+                        map[i].type = '@'; // 设置为炸弹
+                    }
+                    else{
+                        printf("你没有炸弹道具，无法使用。\n");
+                    }
+                }
+                else{
+                    printf("错误: 指令bomb位置参数应在-10到10之间且不为0\n");
+                }
+            }
+            else {
+                printf("错误: 指令bomb需要指定位置\n");
+            }
+        }
+        else if (strcmp(cmd, "robot") == 0) {
+            if (currentPlayer->tool.doll > 0) {
+                currentPlayer->tool.doll--;
+                currentPlayer->tool.total--;
+                for(int i = 1; i <= 10; i++){
+                    int clear_pos = (currentPlayer->position + i) % 70;
+                    int map_idx = find_place(map, clear_pos);
+                    if (map[map_idx].type == '#' || map[map_idx].type == '@') {
+                        map[map_idx].type = '0';
+                    }
+                }
+            }
+            else {
+                printf("你没有机器人道具，无法使用。\n");
+            }
+        }
+        else if (strcmp(cmd, "query") == 0) {
+            printf("资金：%d，点数：%d，位置：%d\n", 
+                currentPlayer->money, currentPlayer->points, currentPlayer->position);
+        }
+        else if (strcmp(cmd, "roll") == 0) {
+            srand(time(NULL));
+            int roll = roll_dice();
+            printf("玩家 %s 掷出了 %d 点，\n", player_getName(currentPlayer->character), roll);
+
+            for(int i = 1; i <= roll; i++){
+                int nextPos = (currentPlayer->position + i) % 70;
+                int j = find_place(map, nextPos);
+                if(map[j].type == '@'){
+                    printf("你遇见了炸弹，被送往医院！\n");
+                    InHospital(currentPlayer);
+                    map[j].type = '0'; // Consume bomb
+                    playerManager_nextPlayer(&playerManager);
+                    goto next_turn;
+                }
+                else if(map[j].type == '#'){
+                    printf("你遇见了路障，停止前进！\n");
+                    currentPlayer->position = nextPos;
+                    playerManager_nextPlayer(&playerManager);
+                    goto next_turn;
+                }
+            }
+            
+            currentPlayer->position = (currentPlayer->position + roll) % 70;
+            printf(" 移动到位置 %d\n", currentPlayer->position);
+             
+            int i = find_place(map, currentPlayer->position);
+
+            if(map[i].type == '0' && map[i].owner== NULL){
+                printf("此处为空地，可以购买。\n");
+                printf("是否购买此地？(y/n): ");
+                char choice_buf[MAX_INPUT];
+                if (fgets(choice_buf, sizeof(choice_buf), stdin) == NULL) break;
+                char choice = choice_buf[0];
+                if (choice == 'y' || choice == 'Y') {
+                    buy_land(map + i, map[i].id, currentPlayer);
+                } 
+                else if(choice == 'n' || choice == 'N') {
+                    printf("放弃购买此地。\n");
+                }
+                else {
+                    printf("错误指令，输入help寻求帮助。\n");
+                }
+            }
+            else if(map[i].type == 'P'){
+                printf("你遇见了监狱，停止前进！\n");
+                InPrison(currentPlayer, map[i]);
+            }
+            else if(map[i].owner == currentPlayer){
+                printf("此处为你拥有的地产，可以升级或出售。\n");
+                printf("是否升级或出售此地？(u 升级 / s 出售 / n 不操作): ");
+                char choice_buf[MAX_INPUT];
+                if (fgets(choice_buf, sizeof(choice_buf), stdin) == NULL) break;
+                char choice = choice_buf[0];
+                if (choice == 'u' || choice == 'U') {
+                    upgrade_land(map + i, map[i].id, currentPlayer);
+                } 
+                else if(choice == 'n' || choice == 'N'){
+                    printf("放弃操作此地。\n");
+                }
+                else {
+                    printf("错误指令，输入help寻求帮助。\n");
+                }
+            }
+            else if(map[i].owner != NULL && map[i].owner != currentPlayer){
+                printf("此处为%s的地产，", player_getName(map[i].owner->character));
+                GetTollFee(currentPlayer,&map[i]);
+                if (playerManager_isGameWon(&playerManager)) {
+                    Player* winner = playerManager_getWinner(&playerManager);
+                    if (winner != NULL) {
+                        printf("游戏结束！%s 获胜！\n", player_getName(winner->character));
+                    }
+                    break;
+                }
+                else{
+                    printf("游戏继续。\n");
+                }
+            }
+            else{
+                printf("此处为特殊地块，触发相应事件。\n");
+                game_handle_cell_event(currentPlayer, &map[i], &playerManager);
+            }
+            
+            playerManager_nextPlayer(&playerManager);
+        } 
+        else if (strcmp(cmd, "sell") == 0) {
+            if (param != NULL) {
+                int pos = atoi(param);
+                if(pos >= 0 && pos <= 69){
+                    sell_land(map, pos, currentPlayer);
+                }
+                else{
+                    printf("错误: 指令sell位置参数应在0到69之间\n");
+                }
+            }
+            else {
+                printf("错误: 指令sell需要指定位置\n");
+            }
+        }
+        else {
+            printf("未知命令，请输入 help 查看帮助。\n");
+        }
+        next_turn:;
     }
 }
 
@@ -434,28 +421,24 @@ int main(int argc, char* argv[]) {
         }
         /* Test mode: if argv[1] is a directory, enter automated test mode */
         if (path_is_dir(argv[1])) {
-            return run_test_mode(argv[1]);
+            run_game_loop(1, argv[1]);
+            return 0;
         }
         /* Fallback: unknown single-arg command */
         printf("Unknown command: %s\n", argv[1]);
         printf("Available commands:\n");
         printf("  testhelloworld - Run hello world test\n");
-        printf("  (no arguments) - Run interactive game or command mode\n");
+        printf("  (no arguments) - Run interactive game\n");
         printf("  <test_case_dir> - Run automated test mode with the case directory\n");
         return 1;
     }
     
-    /* Check if input is redirected (for automated testing) */
-    if (!isatty(fileno(stdin))) {
-        run_command_mode();
-    } else {
-        run_interactive_game();
-    }
+    run_game_loop(0, NULL);
     
     return 0;
 }
 
-/* ---------------- Test Mode Implementation ---------------- */
+/* ---------------- Test Mode Helper Implementation ---------------- */
 
 static int path_is_dir(const char* p) {
     if (!p) return 0;
@@ -497,6 +480,8 @@ static char char_from_player(PlayerCharacter pc) {
     }
 }
 
+/* Test mode: game.ended and winner are derived from real game logic, not preset */
+
 static void write_dump_json(const char* case_dir, Structure* map, PlayerManager* pm) {
     char path[1024];
     snprintf(path, sizeof(path), "%s/%s", case_dir, "dump.json");
@@ -526,11 +511,11 @@ static void write_dump_json(const char* case_dir, Structure* map, PlayerManager*
         fprintf(f, "        \"total\": %d\n", p->tool.total);
         fprintf(f, "      },\n");
         /* Buff durations not fully tracked in current data structures; default to 0 */
-        fprintf(f, "      \"buff\": {\n");
-        fprintf(f, "        \"god\": %d,\n", 0);
-        fprintf(f, "        \"prison\": %d,\n", p->in_prison ? 1 : 0);
-        fprintf(f, "        \"hospital\": %d\n", p->in_hospital ? 1 : 0);
-        fprintf(f, "      }\n");
+    fprintf(f, "      \"buff\": {\n");
+    fprintf(f, "        \"god\": %d,\n", p->god_bless_days);
+    fprintf(f, "        \"prison\": %d,\n", p->prison_days);
+    fprintf(f, "        \"hospital\": %d\n", p->hospital_days);
+    fprintf(f, "      }\n");
         fprintf(f, "    }%s\n", (i == pm->playerCount - 1) ? "" : ",");
     }
     fputs("  ],\n", f);
@@ -579,99 +564,231 @@ static void write_dump_json(const char* case_dir, Structure* map, PlayerManager*
     fprintf(f, "    \"now_player\": %d,\n", pm->currentPlayerIndex);
     int next_index = pm->playerCount > 0 ? ((pm->currentPlayerIndex + 1) % pm->playerCount) : 0;
     fprintf(f, "    \"next_player\": %d,\n", next_index);
-    fprintf(f, "    \"ended\": %s,\n", "true");
-    fprintf(f, "    \"winner\": %d\n", -1);
+    /* Compute ended/winner logically */
+    int ended = playerManager_isGameWon(pm) ? 1 : 0;
+    int winner_id = -1;
+    if (ended) {
+        Player* w = playerManager_getWinner(pm);
+        if (w != NULL) {
+            /* find index within current players */
+            for (int i = 0; i < pm->playerCount; i++) {
+                if (&pm->players[i] == w) { winner_id = i; break; }
+            }
+        }
+    }
+    fprintf(f, "    \"ended\": %s,\n", ended ? "true" : "false");
+    fprintf(f, "    \"winner\": %d\n", winner_id);
     fputs("  }\n", f);
 
     fputs("}\n", f);
     fclose(f);
 }
 
-static int is_digits_1_4_unique(const char* s) {
-    if (!s) return 0;
-    int len = (int)strlen(s);
-    if (len < 2 || len > 4) return 0;
-    int used[5] = {0};
-    for (int i = 0; i < len; i++) {
-        char c = s[i];
-        if (c < '1' || c > '4') return 0;
-        int d = c - '0';
-        if (used[d]) return 0;
-        used[d] = 1;
-    }
-    return 1;
+static char* read_file_all(const char* path, long* out_len) {
+    FILE* f = fopen(path, "rb");
+    if (!f) return NULL;
+    fseek(f, 0, SEEK_END);
+    long n = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    char* buf = (char*)malloc((size_t)n + 1);
+    if (!buf) { fclose(f); return NULL; }
+    if (fread(buf, 1, (size_t)n, f) != (size_t)n) { fclose(f); free(buf); return NULL; }
+    buf[n] = '\0';
+    fclose(f);
+    if (out_len) *out_len = n;
+    return buf;
 }
 
-static void add_players_from_selection(PlayerManager* pm, const char* sel, int initialMoney) {
-    int len = (int)strlen(sel);
-    for (int i = 0; i < len; i++) {
-        int d = sel[i] - '0';
-        playerManager_addPlayer(pm, (PlayerCharacter)d, initialMoney);
+static int parse_int_in(const char* start, const char* end, const char* key, int defval) {
+    if (!start) return defval;
+    char pattern[128];
+    snprintf(pattern, sizeof(pattern), "\"%s\"", key);
+    const char* p = start;
+    while (p && p < end) {
+        const char* k = strstr(p, pattern);
+        if (!k || k >= end) break;
+        const char* colon = strchr(k, ':');
+        if (!colon || colon >= end) break;
+        long v = strtol(colon + 1, NULL, 10);
+        return (int)v;
+    }
+    return defval;
+}
+
+static int parse_str_char_in(const char* start, const char* end, const char* key, char defchar) {
+    char pattern[128];
+    snprintf(pattern, sizeof(pattern), "\"%s\"", key);
+    const char* k = strstr(start, pattern);
+    if (!k || k >= end) return defchar;
+    const char* colon = strchr(k, ':');
+    if (!colon || colon >= end) return defchar;
+    const char* q1 = strchr(colon, '"');
+    if (!q1 || q1 >= end) return defchar;
+    const char* q2 = strchr(q1 + 1, '"');
+    if (!q2 || q2 > end) return defchar;
+    if (q2 > q1 + 1) return *(q1 + 1);
+    return defchar;
+}
+
+static PlayerCharacter pc_from_char(char c) {
+    switch (c) {
+        case 'Q': return QIAN_FUREN;
+        case 'A': return ATURBER;
+        case 'S': return SUN_XIAOMEI;
+        case 'J': return JIN_BEIBEI;
+        default: return QIAN_FUREN;
     }
 }
 
-int run_test_mode(const char* case_dir) {
-    /* Initialize game state */
-    Structure map[HEIGHT * WIDTH];
-    init_map(map);
-    GameConfig config; gameConfig_init(&config);
-    PlayerManager pm; playerManager_init(&pm);
-
-    /* Input handling from stdin: first line money, second line selection, then commands */
-    char line[256];
-    int stage = 0;
-    int initialMoney = 10000;
-    while (fgets(line, sizeof(line), stdin)) {
-        line[strcspn(line, "\n")] = 0; /* trim newline */
-        if (strlen(line) == 0) continue;
-
-        if (stage == 0) {
-            /* initial money */
-            char* endptr = NULL;
-            long v = strtol(line, &endptr, 10);
-            if (endptr != line && v >= 1000 && v <= 50000) {
-                initialMoney = (int)v;
+static void load_preset(const char* json, Structure* map, PlayerManager* pm) {
+    const char* players = strstr(json, "\"players\"");
+    if (players) {
+        const char* lb = strchr(players, '[');
+        const char* rb = lb ? strchr(lb, ']') : NULL;
+        if (lb && rb && rb > lb) {
+            const char* p = lb;
+            int max_index = -1;
+            while (1) {
+                const char* ob = strchr(p, '{');
+                if (!ob || ob >= rb) break;
+                int braces = 1;
+                const char* q = ob + 1;
+                while (q < rb && braces > 0) {
+                    if (*q == '{') braces++; else if (*q == '}') braces--; q++;
+                }
+                const char* oe = q; /* one past '}' */
+                int idx = parse_int_in(ob, oe, "index", -1);
+                if (idx >= 0 && idx < MAX_PLAYERS) {
+                    if (idx + 1 > pm->playerCount) pm->playerCount = idx + 1;
+                    if (idx > max_index) max_index = idx;
+                    Player* pl = &pm->players[idx];
+                    char namec = parse_str_char_in(ob, oe, "name", 'Q');
+                    pl->character = pc_from_char(namec);
+                    pl->money = parse_int_in(ob, oe, "fund", pl->money);
+                    pl->points = parse_int_in(ob, oe, "credit", pl->points);
+                    pl->position = parse_int_in(ob, oe, "location", pl->position);
+                    /* props */
+                    pl->tool.bomb = parse_int_in(ob, oe, "bomb", pl->tool.bomb);
+                    pl->tool.roadblock = parse_int_in(ob, oe, "barrier", pl->tool.roadblock);
+                    pl->tool.doll = parse_int_in(ob, oe, "robot", pl->tool.doll);
+                    pl->tool.total = parse_int_in(ob, oe, "total", pl->tool.total);
+                    /* buffs (read from nested buff object keys) */
+                    int god_turns = parse_int_in(ob, oe, "god", 0);
+                    int prison_turns = parse_int_in(ob, oe, "prison", 0);
+                    int hospital_turns = parse_int_in(ob, oe, "hospital", 0);
+                    pl->god_bless_days = god_turns;
+                    pl->prison_days = prison_turns;
+                    pl->hospital_days = hospital_turns;
+                    pl->god = god_turns > 0;
+                    pl->in_prison = prison_turns > 0;
+                    pl->in_hospital = hospital_turns > 0;
+                    /* guard in case fields exist */
+                    #ifdef __GNUC__
+                    /* best-effort: some builds have these fields */
+                    extern void __attribute__((weak)) _ignore(void*);
+                    #endif
+                    /* If fields exist, set them via macros or direct; otherwise ignore */
+                    /* Not strictly portable; kept simple */
+                }
+                p = oe;
             }
-            gameConfig_setInitialMoney(&config, initialMoney);
-            stage = 1;
-            continue;
         }
-        if (stage == 1) {
-            /* player selection like 421 */
-            if (!is_digits_1_4_unique(line)) {
-                fprintf(stderr, "Invalid player selection: %s\n", line);
-                return 1;
-            }
-            add_players_from_selection(&pm, line, initialMoney);
-            stage = 2;
-            continue;
-        }
-
-        /* Commands: only support `step n` and `dump` and `quit` here */
-        if (strcmp(line, "dump") == 0) {
-            write_dump_json(case_dir, map, &pm);
-            /* End immediately after dump */
-            return 0;
-        }
-        if (strcmp(line, "quit") == 0) {
-            /* No dump; exit */
-            return 0;
-        }
-        if (strncmp(line, "step ", 5) == 0) {
-            const char* nstr = line + 5;
-            long steps = strtol(nstr, NULL, 10);
-            if (steps < 0) steps = 0;
-            Player* current = playerManager_getCurrentPlayer(&pm);
-            if (current) {
-                /* Simple movement; ignore obstacles and interactions in test mode for now */
-                current->position = (current->position + (int)(steps % 70)) % 70;
-            }
-            continue;
-        }
-        /* Unknown test command: ignore */
     }
 
-    /* If EOF without dump, still write a dump for debugging */
-    write_dump_json(case_dir, map, &pm);
-    return 0;
+    /* placed_prop */
+    const char* pprop = strstr(json, "\"placed_prop\"");
+    if (pprop) {
+        const char* bombk = strstr(pprop, "\"bomb\"");
+        if (bombk) {
+            const char* lb = strchr(bombk, '[');
+            const char* rb = lb ? strchr(lb, ']') : NULL;
+            if (lb && rb && rb > lb) {
+                const char* s = lb + 1;
+                while (s < rb) {
+                    char* endptr;
+                    long v = strtol(s, &endptr, 10);
+                    if (endptr == s) { s++; continue; }
+                    int id = (int)v;
+                    int idx = find_place(map, id);
+                    if (idx >= 0) map[idx].type = '@';
+                    s = endptr;
+                }
+            }
+        }
+        const char* bark = strstr(pprop, "\"barrier\"");
+        if (bark) {
+            const char* lb = strchr(bark, '[');
+            const char* rb = lb ? strchr(lb, ']') : NULL;
+            if (lb && rb && rb > lb) {
+                const char* s = lb + 1;
+                while (s < rb) {
+                    char* endptr;
+                    long v = strtol(s, &endptr, 10);
+                    if (endptr == s) { s++; continue; }
+                    int id = (int)v;
+                    int idx = find_place(map, id);
+                    if (idx >= 0) map[idx].type = '#';
+                    s = endptr;
+                }
+            }
+        }
+    }
+
+    /* houses */
+    const char* houses = strstr(json, "\"houses\"");
+    if (houses) {
+        const char* lb = strchr(houses, '{');
+        const char* rb = NULL;
+        if (lb) {
+            int depth = 1; const char* p = lb + 1;
+            while (*p) {
+                if (*p == '{') depth++;
+                else if (*p == '}') { depth--; if (depth == 0) { rb = p; break; } }
+                p++;
+            }
+        }
+        if (lb && rb && rb > lb) {
+            const char* s = lb + 1;
+            while (s < rb) {
+                while (s < rb && *s != '"') s++;
+                if (s >= rb) break;
+                const char* q1 = s + 1;
+                const char* q2 = strchr(q1, '"');
+                if (!q2 || q2 >= rb) break;
+                int id = atoi(q1);
+                const char* colon = strchr(q2, ':');
+                if (!colon || colon >= rb) break;
+                const char* ob = strchr(colon, '{');
+                if (!ob || ob >= rb) { s = q2 + 1; continue; }
+                int braces = 1; const char* p2 = ob + 1;
+                while (p2 < rb && braces > 0) { if (*p2 == '{') braces++; else if (*p2 == '}') braces--; p2++; }
+                const char* oe = p2; /* one past */
+                char ownerc = parse_str_char_in(ob, oe, "owner", 'Q');
+                int level = parse_int_in(ob, oe, "level", 0);
+                int mi = find_place(map, id);
+                if (mi >= 0) {
+                    map[mi].level = level;
+                    /* set owner pointer */
+                    for (int i = 0; i < pm->playerCount; i++) {
+                        if (char_from_player(pm->players[i].character) == ownerc) {
+                            map[mi].owner = &pm->players[i];
+                            break;
+                        }
+                    }
+                }
+                s = oe + 1;
+            }
+        }
+    }
+
+    /* game: only respect now_player; ignore ended/winner in presets */
+    const char* game = strstr(json, "\"game\"");
+    if (game) {
+        const char* lb = strchr(game, '{');
+        const char* rb = lb ? strchr(lb, '}') : NULL;
+        if (lb && rb && rb > lb) {
+            int nowp = parse_int_in(lb, rb, "now_player", pm->currentPlayerIndex);
+            if (nowp >= 0 && nowp < pm->playerCount) pm->currentPlayerIndex = nowp;
+        }
+    }
 }

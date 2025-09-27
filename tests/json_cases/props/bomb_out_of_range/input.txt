@@ -1,0 +1,4 @@
+bomb 0
+bomb 11
+bomb -11
+dump

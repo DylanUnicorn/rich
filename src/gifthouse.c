@@ -32,15 +32,18 @@ void player_getintoGiftHouse(Player* currentPlayer) {
         } else if (choice == '1') {
             currentPlayer->money += 2000;
             printf("您已获取 2000 元。当前资金: %d\n", currentPlayer->money);
+            getchar(); 
             break;
         } else if (choice == '2') {
             currentPlayer->points += 200;
             printf("您已获取 200 点数。当前点数: %d\n", currentPlayer->points);
+            getchar(); 
             break;
         } else if (choice == '3') {
             currentPlayer->god = true;
             currentPlayer->god_bless_days = 5; // Assuming god bless lasts for 5 rounds
             printf("您已获取神仙保佑！！！接下来五回合您无需支付过路费。\n");
+            getchar(); 
             break;
         } else {
             printf("无效选择，请重新选择。\n");
