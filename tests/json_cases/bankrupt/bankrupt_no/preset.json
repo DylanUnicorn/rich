@@ -5,7 +5,7 @@
       "name": "Q",
       "fund": 10000,
       "credit": 0,
-      "location": 0,
+      "location": 4,
       "alive": true,
       "prop": {
         "bomb": 0,
@@ -21,7 +21,7 @@
     }, {
       "index": 1,
       "name": "A",
-      "fund": 100,
+      "fund": 99,
       "credit": 0,
       "location": 0,
       "alive": true,
@@ -36,30 +36,12 @@
         "prison": 0,
         "hospital": 0
       }
-    }, {
+    },{
       "index": 2,
-      "name": "S",
-      "fund": 10000,
-      "credit": 0,
-      "location": 0,
-      "alive": true,
-      "prop": {
-        "bomb": 0,
-        "barrier": 0,
-        "robot": 0,
-        "total": 0
-      },
-      "buff": {
-        "god": 0,
-        "prison": 0,
-        "hospital": 0
-      }
-    }, {
-      "index": 3,
       "name": "J",
       "fund": 10000,
       "credit": 0,
-      "location": 0,
+      "location": 15,
       "alive": true,
       "prop": {
         "bomb": 0,
