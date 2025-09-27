@@ -795,14 +795,8 @@ static void write_dump_json(const char* case_dir, Structure* map, PlayerManager*
     fputs("  \"god\": {\n", f);
     fprintf(f, "    \"spawn_cooldown\": %d,\n", g_god_spawn_cooldown);
     fprintf(f, "    \"location\": %d,\n", g_god_location);
-    /* duration: 0 if no god; otherwise remaining = 5 - (g_god_turn-1) */
-    int god_duration = 0;
-    if (g_god_location != -1) {
-        int spent = (g_god_turn > 0 ? g_god_turn - 1 : 0);
-        if (spent < 0) spent = 0;
-        god_duration = 5 - spent;
-        if (god_duration < 0) god_duration = 0;
-    }
+    /* duration: remaining turns (g_god_turn) if god exists; else 0 */
+    int god_duration = (g_god_location != -1) ? g_god_turn : 0;
     fprintf(f, "    \"duration\": %d\n", god_duration);
     fputs("  }\n", f);
 
@@ -1035,14 +1029,11 @@ static void load_preset(const char* json, Structure* map, PlayerManager* pm) {
                     map[idx].type = 'F';
                 }
             }
-            if (dur <= 0 || g_god_location == -1) {
+            if (dur < 0 || g_god_location == -1) {
                 g_god_turn = 0;
             } else {
                 if (dur > 5) dur = 5;
-                /* g_god_turn counts 1..5 for elapsed presence; duration = 5 - (turn-1) */
-                g_god_turn = (5 - dur) + 1;
-                if (g_god_turn < 1) g_god_turn = 1;
-                if (g_god_turn > 5) g_god_turn = 5;
+                g_god_turn = dur; // directly remaining
             }
         }
     }

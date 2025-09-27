@@ -1,13 +1,5 @@
-# advance 5 full rounds (2 players -> 10 steps with step 0)
 step 0
+n
 step 0
-step 0
-step 0
-step 0
-step 0
-step 0
-step 0
-step 0
-step 0
-# after 5 rounds, god should disappear
+n
 dump
