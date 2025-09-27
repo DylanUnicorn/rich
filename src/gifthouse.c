@@ -35,7 +35,7 @@ void player_getintoGiftHouse(Player* currentPlayer) {
         printf("您已获得 200 点数。当前点数: %d\n", currentPlayer->points);
     } else if (strcmp(choice, "3") == 0) {
         currentPlayer->god = true;
-        currentPlayer->god_bless_days = 5;
+        currentPlayer->god_bless_days += 5;
         printf("您已获得财神附体，五回合内不用支付过路费！\n");
     } else {
         printf("无效输入 '%s'，很遗憾您放弃了本次礼品屋的选择。\n", choice);

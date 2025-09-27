@@ -86,7 +86,7 @@ void game_handle_turn(int* god_pos, int* god_turn, bool* god_used, int* game_tur
     }
     
 }
-void game_handle_cell_event(Player* player, Structure* cell, PlayerManager* player_manager){
+void game_handle_cell_event(Player* player, Structure* cell, PlayerManager* player_manager,bool* god_used) {
     if (cell == NULL || player == NULL || player_manager == NULL) return;
 
     switch (cell->type) {
