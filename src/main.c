@@ -49,7 +49,8 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
     playerManager_init(&playerManager);
 
     int use_preset = 0;
-    int game_turns = 1;
+    int round_count = 1; // 记录完整回合数
+    int game_turns = 10; // 直接作为冷却计数，0时可刷新财神
     bool god_used = false;//标志财神是否被使用
     int god_turn = 0;//记录财神出现的回合数
     int god_pos = -1;//记录财神位置 且god_pos = -1表示未出现
@@ -241,10 +242,16 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 }
                 if (!turn_advanced) {
                     playerManager_nextPlayer(&playerManager);
-            if (playerManager.currentPlayerIndex == 0) {
-                game_handle_turn(&god_pos, &god_turn, &god_used, &game_turns, map, &playerManager);
-                printf("当前已完成 %d 回合\n", game_turns);
-            }
+                    if (playerManager.currentPlayerIndex == 0) {
+                        round_count++;
+                        // 财神冷却机制
+                        if (god_pos == -1 && game_turns > 0) {
+                            game_turns--;
+                            printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", game_turns);
+                        }
+                        game_handle_turn(&god_pos, &god_turn, &god_used, &game_turns, map, &playerManager);
+                        printf("当前到达 %d 回合\n", round_count);
+                    }
                 }
                 continue;
             } else {
@@ -461,9 +468,15 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
             
             playerManager_nextPlayer(&playerManager);
             if (playerManager.currentPlayerIndex == 0) {
-                game_handle_turn(&god_pos, &god_turn, &god_used, &game_turns, map, &playerManager);
-                printf("当前已完成 %d 回合\n", game_turns);
-            }
+                        round_count++;
+                        // 财神冷却机制
+                        if (god_pos == -1 && game_turns > 0) {
+                            game_turns--;
+                            printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", game_turns);
+                        }
+                        game_handle_turn(&god_pos, &god_turn, &god_used, &game_turns, map, &playerManager);
+                        printf("当前到达 %d 回合\n", round_count);
+                    }
         } 
         else if (strcmp(cmd, "sell") == 0) {
             if (param != NULL) {
