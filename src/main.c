@@ -104,23 +104,23 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
             ui_display_prompt(currentPlayer);
         }
 
-        if (currentPlayer->in_hospital) {
-            if (!is_test_mode) printf("你在医院，无法进行其他操作，回车结束回合。\n");
-            HospitalDayReduceOne(currentPlayer);
-            playerManager_nextPlayer(&playerManager);
-            // In both modes, consume a line of input to simulate "press enter"
-            if (fgets(input, MAX_INPUT, stdin) == NULL) break;
-            if (!is_test_mode) ui_clear_screen();
-            continue;
-        }
-        if (currentPlayer->in_prison) {
-            if (!is_test_mode) printf("你在监狱，无法进行其他操作，回车结束回合。\n");
-            PrisonDayReduceOne(currentPlayer);
-            playerManager_nextPlayer(&playerManager);
-            if (fgets(input, MAX_INPUT, stdin) == NULL) break;
-            if (!is_test_mode) ui_clear_screen();
-            continue;
-        }
+        // if (currentPlayer->in_hospital) {
+        //     if (!is_test_mode) printf("你在医院，无法进行其他操作，回车结束回合。\n");
+        //     HospitalDayReduceOne(currentPlayer);
+        //     playerManager_nextPlayer(&playerManager);
+        //     // In both modes, consume a line of input to simulate "press enter"
+        //     if (fgets(input, MAX_INPUT, stdin) == NULL) break;
+        //     if (!is_test_mode) ui_clear_screen();
+        //     continue;
+        // }
+        // if (currentPlayer->in_prison) {
+        //     if (!is_test_mode) printf("你在监狱，无法进行其他操作，回车结束回合。\n");
+        //     PrisonDayReduceOne(currentPlayer);
+        //     playerManager_nextPlayer(&playerManager);
+        //     if (fgets(input, MAX_INPUT, stdin) == NULL) break;
+        //     if (!is_test_mode) ui_clear_screen();
+        //     continue;
+        // }
 
         if (fgets(input, MAX_INPUT, stdin) == NULL) {
             if (is_test_mode) write_dump_json(case_dir, map, &playerManager);
@@ -148,27 +148,28 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 int steps = atoi(param);
                 int turn_advanced = 0;
                 //如果接下来遇见炸弹就被送往医院
-                for(int i = 0; i <= steps; i++){
-                    int nextPos = (currentPlayer->position + i) % 70;
-                    int j = find_place(map, nextPos);
-                    if(map[j].type == '@'){
-                        printf("你遇见了炸弹，被送往医院！\n");
-                        InHospital(currentPlayer);
-                        map[j].type = '0'; // Consume bomb
-                        playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-                        turn_advanced = 1;
-                        break;
-                    }
-                    else if(map[j].type == '#'){
-                        printf("你遇见了路障，停止前进！\n");
-                        currentPlayer->position = (currentPlayer->position + i) % 70;
-                        playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-                        turn_advanced = 1;
-                        break;
-                    }
-                }
-                if (turn_advanced) continue;
+                // for(int i = 0; i <= steps; i++){
+                //     int nextPos = (currentPlayer->position + i) % 70;
+                //     int j = find_place(map, nextPos);
+                //     if(map[j].type == '@'){
+                //         printf("你遇见了炸弹，被送往医院！\n");
+                //         InHospital(currentPlayer);
+                //         map[j].type = '0'; // Consume bomb
+                //         playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                //         turn_advanced = 1;
+                //         break;
+                //     }
+                //     else if(map[j].type == '#'){
+                //         printf("你遇见了路障，停止前进！\n");
+                //         currentPlayer->position = (currentPlayer->position + i) % 70;
+                //         playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                //         turn_advanced = 1;
+                //         break;
+                //     }
+                // }
+                // if (turn_advanced) continue;
                 currentPlayer->position = (currentPlayer->position + steps) % 70; // 假设地图有70个位置
+                if(currentPlayer->position < 0) currentPlayer->position += 70;  
                 printf("你移动到了位置 %d\n", currentPlayer->position);
 
                 int i = find_place(map, currentPlayer->position);
@@ -189,12 +190,12 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                         printf("错误指令，输入help寻求帮助。\n");
                     }
                 }
-                else if(map[i].type == 'P'){
-                    printf("你遇见了监狱，停止前进！\n");
-                    InPrison(currentPlayer, map[i]);
-                    playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-                    turn_advanced = 1;
-                }
+                // else if(map[i].type == 'P'){
+                //     printf("你遇见了监狱，停止前进！\n");
+                //     InPrison(currentPlayer, map[i]);
+                //     playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
+                //     turn_advanced = 1;
+                // }
                 else if(map[i].owner == currentPlayer){
                     printf("此处为你拥有的地产，可以升级或出售。\n");
                     printf("是否升级此地？(u 升级 / n 不操作): ");
@@ -288,50 +289,50 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 printf("错误: 指令block需要指定位置\n");
             }
         }
-        else if (strcmp(cmd, "bomb") == 0) {
-            if (param != NULL) {
-                int offset = atoi(param);
-                if(offset >= -10 && offset <= 10 && offset != 0){
-                    if(currentPlayer->tool.bomb > 0){
-                        int target_pos = (currentPlayer->position + offset + 70) % 70;
-                        int i = find_place(map, target_pos);
-                        bool owner_on_land = false;
-                        for(int p = 0; p < playerManager.playerCount; p++){
-                            Player* player = &playerManager.players[p];
-                            if(player->position == target_pos && player->bankruptcy == false){
-                                printf("该位置有玩家，无法放置炸弹。\n");
-                                owner_on_land = true;
-                            }
-                        }
-                        if(map[i].type == '@'){
-                            printf("该位置已有炸弹，无法重复放置。\n");
-                            continue;
-                        }
-                        else if(map[i].type == '#'){
-                            printf("该位置已有路障，无法放置炸弹。\n");
-                            continue;
-                        }
-                        else if(owner_on_land == true){
-                            owner_on_land = false;
-                            continue;
-                        }
-                        currentPlayer->tool.bomb--;
-                        currentPlayer->tool.total--;
+        // else if (strcmp(cmd, "bomb") == 0) {
+        //     if (param != NULL) {
+        //         int offset = atoi(param);
+        //         if(offset >= -10 && offset <= 10 && offset != 0){
+        //             if(currentPlayer->tool.bomb > 0){
+        //                 int target_pos = (currentPlayer->position + offset + 70) % 70;
+        //                 int i = find_place(map, target_pos);
+        //                 bool owner_on_land = false;
+        //                 for(int p = 0; p < playerManager.playerCount; p++){
+        //                     Player* player = &playerManager.players[p];
+        //                     if(player->position == target_pos && player->bankruptcy == false){
+        //                         printf("该位置有玩家，无法放置炸弹。\n");
+        //                         owner_on_land = true;
+        //                     }
+        //                 }
+        //                 if(map[i].type == '@'){
+        //                     printf("该位置已有炸弹，无法重复放置。\n");
+        //                     continue;
+        //                 }
+        //                 else if(map[i].type == '#'){
+        //                     printf("该位置已有路障，无法放置炸弹。\n");
+        //                     continue;
+        //                 }
+        //                 else if(owner_on_land == true){
+        //                     owner_on_land = false;
+        //                     continue;
+        //                 }
+        //                 currentPlayer->tool.bomb--;
+        //                 currentPlayer->tool.total--;
                         
-                        map[i].type = '@'; // 设置为炸弹
-                    }
-                    else{
-                        printf("你没有炸弹道具，无法使用。\n");
-                    }
-                }
-                else{
-                    printf("错误: 指令bomb位置参数应在-10到10之间且不为0\n");
-                }
-            }
-            else {
-                printf("错误: 指令bomb需要指定位置\n");
-            }
-        }
+        //                 map[i].type = '@'; // 设置为炸弹
+        //             }
+        //             else{
+        //                 printf("你没有炸弹道具，无法使用。\n");
+        //             }
+        //         }
+        //         else{
+        //             printf("错误: 指令bomb位置参数应在-10到10之间且不为0\n");
+        //         }
+        //     }
+        //     else {
+        //         printf("错误: 指令bomb需要指定位置\n");
+        //     }
+        // }
         else if (strcmp(cmd, "robot") == 0) {
             if (currentPlayer->tool.doll > 0) {
                 currentPlayer->tool.doll--;
@@ -367,23 +368,23 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
             int roll = roll_dice();
             printf("玩家 %s 掷出了 %d 点，\n", player_getName(currentPlayer->character), roll);
 
-            for(int i = 1; i <= roll; i++){
-                int nextPos = (currentPlayer->position + i) % 70;
-                int j = find_place(map, nextPos);
-                if(map[j].type == '@'){
-                    printf("你遇见了炸弹，被送往医院！\n");
-                    InHospital(currentPlayer);
-                    map[j].type = '0'; // Consume bomb
-                    playerManager_nextPlayer(&playerManager);
-                    goto next_turn;
-                }
-                else if(map[j].type == '#'){
-                    printf("你遇见了路障，停止前进！\n");
-                    currentPlayer->position = nextPos;
-                    playerManager_nextPlayer(&playerManager);
-                    goto next_turn;
-                }
-            }
+            // for(int i = 1; i <= roll; i++){
+            //     int nextPos = (currentPlayer->position + i) % 70;
+            //     int j = find_place(map, nextPos);
+            //     if(map[j].type == '@'){
+            //         printf("你遇见了炸弹，被送往医院！\n");
+            //         InHospital(currentPlayer);
+            //         map[j].type = '0'; // Consume bomb
+            //         playerManager_nextPlayer(&playerManager);
+            //         goto next_turn;
+            //     }
+            //     else if(map[j].type == '#'){
+            //         printf("你遇见了路障，停止前进！\n");
+            //         currentPlayer->position = nextPos;
+            //         playerManager_nextPlayer(&playerManager);
+            //         goto next_turn;
+            //     }
+            // }
             
             currentPlayer->position = (currentPlayer->position + roll) % 70;
             printf(" 移动到位置 %d\n", currentPlayer->position);
@@ -406,10 +407,10 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     printf("错误指令，输入help寻求帮助。\n");
                 }
             }
-            else if(map[i].type == 'P'){
-                printf("你遇见了监狱，停止前进！\n");
-                InPrison(currentPlayer, map[i]);
-            }
+            // else if(map[i].type == 'P'){
+            //     printf("你遇见了监狱，停止前进！\n");
+            //     InPrison(currentPlayer, map[i]);
+            // }
             else if(map[i].owner == currentPlayer){
                 printf("此处为你拥有的地产，可以升级或出售。\n");
                 printf("是否升级或出售此地？(u 升级 / s 出售 / n 不操作): ");
@@ -467,7 +468,7 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
         else {
             printf("未知命令，请输入 help 查看帮助。\n");
         }
-        next_turn:;
+        //next_turn:;
     }
 }
 

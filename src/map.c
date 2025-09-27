@@ -17,7 +17,7 @@ void init_map(Structure* map){
                     map[i * WIDTH + j].id = 0;
                 }
                 else if(j == 14) {
-                    map[i * WIDTH + j].type = 'H'; // Hospital
+                    map[i * WIDTH + j].type = 'P'; // Park
                     map[i * WIDTH + j].id = 14;
                 }
                 else if(j == 28) {
@@ -32,11 +32,11 @@ void init_map(Structure* map){
             }   
             else if(i == 7){
                 if(j == 0) {
-                    map[i * WIDTH + j].type = 'M'; // Magic
+                    map[i * WIDTH + j].type = 'P'; // Park
                     map[i * WIDTH + j].id = 63;
                 }
                 else if(j == 14) {
-                    map[i * WIDTH + j].type = 'P'; // Prison
+                    map[i * WIDTH + j].type = 'P'; // Park
                     map[i * WIDTH + j].id = 49;
                 }
                 else if(j == 28) { 
@@ -51,7 +51,7 @@ void init_map(Structure* map){
             } 
             else if(j == 0){
                 if(i != 0 && i != 7) {
-                    map[i * WIDTH + j].type = '$'; // Magic
+                    map[i * WIDTH + j].type = '$'; // Mine
                     map[i * WIDTH + j].id = 70 - i;
                 }
             } 

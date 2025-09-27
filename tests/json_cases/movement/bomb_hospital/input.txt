@@ -1,6 +1,5 @@
 bomb 2
 step 5
-dump
 bomb 2
 step 5
 dump
