@@ -27,7 +27,7 @@ void game_handle_cell_event(Player* player, Structure* cell, PlayerManager* play
 
     switch (cell->type) {
         case 'H': // Hospital
-        printf("这里是医院，快滚蛋");    
+         printf("此处为医院。\n");  
         break;
         case 'P': // Prison
             game_handle_jail(player);

@@ -212,8 +212,11 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     }
                 }
                 else if(map[i].owner != NULL && map[i].owner != currentPlayer){
-                    printf("此处为%s的地产，你需要支付过路费。\n", player_getName(map[i].owner->character));
+                    printf("此处为%s的地产，", player_getName(map[i].owner->character));
                     GetTollFee(currentPlayer,&map[i]);
+                    if(player_isBankrupt(currentPlayer)){
+                    IBankruptcy(currentPlayer,&playerManager,map);
+                    }
                     if (playerManager_isGameWon(&playerManager)) {
                         Player* winner = playerManager_getWinner(&playerManager);
                         if (winner != NULL) {
@@ -416,6 +419,9 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
             else if(map[i].owner != NULL && map[i].owner != currentPlayer){
                 printf("此处为%s的地产，", player_getName(map[i].owner->character));
                 GetTollFee(currentPlayer,&map[i]);
+                if(player_isBankrupt(currentPlayer)){
+                    IBankruptcy(currentPlayer,&playerManager,map);
+                }
                 if (playerManager_isGameWon(&playerManager)) {
                     Player* winner = playerManager_getWinner(&playerManager);
                     if (winner != NULL) {
