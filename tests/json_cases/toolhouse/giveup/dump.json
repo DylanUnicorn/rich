@@ -3,15 +3,15 @@
     {
       "index": 0,
       "name": "Q",
-      "fund": -200,
-      "credit": 0,
-      "location": 1,
-      "alive": false,
+      "fund": 15000,
+      "credit": 100,
+      "location": 28,
+      "alive": true,
       "prop": {
-        "bomb": 0,
-        "barrier": 0,
+        "bomb": 1,
+        "barrier": 2,
         "robot": 0,
-        "total": 0
+        "total": 3
       },
       "buff": {
         "god": 0,
@@ -22,8 +22,8 @@
     {
       "index": 1,
       "name": "A",
-      "fund": 2200,
-      "credit": 0,
+      "fund": 12000,
+      "credit": 5,
       "location": 0,
       "alive": true,
       "prop": {
@@ -40,7 +40,6 @@
     }
   ],
   "houses": {
-    "1": { "owner": "A", "level": 3 }
   },
   "placed_prop": {
     "bomb": [],
