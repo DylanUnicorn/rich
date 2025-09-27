@@ -4,7 +4,7 @@
      "prop": {"bomb": 1, "barrier": 2, "robot": 1, "total": 4},
      "buff": {"god": 0, "prison": 0, "hospital": 0}
     },
-    {"index": 1, "name": "A", "fund": 12000, "credit": 5, "location": 28,"alive": true,
+    {"index": 1, "name": "A", "fund": 12000, "credit": 5, "location": 0,"alive": true,
      "prop": {"bomb": 0, "barrier": 0, "robot": 0, "total": 0},
      "buff": {"god": 0, "prison": 0, "hospital": 0}
     }
