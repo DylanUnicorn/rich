@@ -351,6 +351,16 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
         else if (strcmp(cmd, "query") == 0) {
             printf("资金：%d，点数：%d，位置：%d\n", 
                 currentPlayer->money, currentPlayer->points, currentPlayer->position);
+            printf("地产：");
+            for (int i = 0; i < 70; i++) {
+                if (currentPlayer->house[i] == 1) {
+                    printf("%d ", i);
+                }
+            }
+            printf("\n道具：炸弹 %d，路障 %d，机器人 %d\n",
+                currentPlayer->tool.bomb,
+                currentPlayer->tool.roadblock,
+                currentPlayer->tool.doll);
         }
         else if (strcmp(cmd, "roll") == 0) {
             srand(time(NULL));
