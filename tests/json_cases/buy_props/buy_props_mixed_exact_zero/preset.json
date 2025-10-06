@@ -1,10 +1,12 @@
 {
   "players": [
-  {"index": 0, "name": "Q", "fund": 10000, "credit": 0, "location": 0, "alive": true,
+    {"index": 0, "name": "Q", "fund": 10000, "credit": 80, "location": 27,
+     "alive": true,
      "prop": {"bomb": 0, "barrier": 0, "robot": 0, "total": 0},
-   "buff": {"god": 4, "prison": 0, "hospital": 0}
+     "buff": {"god": 0, "prison": 0, "hospital": 0}
     },
-    {"index": 1, "name": "A", "fund": 10000, "credit": 0, "location": 0, "alive": true,
+    {"index": 1, "name": "A", "fund": 10000, "credit": 0, "location": 0,
+     "alive": true,
      "prop": {"bomb": 0, "barrier": 0, "robot": 0, "total": 0},
      "buff": {"god": 0, "prison": 0, "hospital": 0}
     }

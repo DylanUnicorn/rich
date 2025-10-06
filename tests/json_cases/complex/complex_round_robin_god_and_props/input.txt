@@ -1,0 +1,20 @@
+block 3
+step 1
+# Q at 1 (own land), next A
+step 1
+# A at 28 (tool house) points=40 -> can enter, but do nothing and exit by providing f
+f
+step 7
+# S from 34 to 41 normal land
+step 0
+# round completes; god cooldown 1->0 and refresh triggers next turn handling
+step 0
+# Q at 1 encounters nothing; ensure god may be on track; gift if land G reached later
+step 34
+3
+# if reaching G, pick god; otherwise input ignored
+step 1
+# move to 36; check rent free if landing on other's land
+robot
+# use robot if available
+dump

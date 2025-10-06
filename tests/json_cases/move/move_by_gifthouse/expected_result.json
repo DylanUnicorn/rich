@@ -1,0 +1,26 @@
+{
+  "players": [
+    {
+      "index": 0,
+      "name": "J",
+      "fund": 12000,
+      "credit": 0,
+      "location": 35,
+      "prop": {"bomb": 0, "barrier": 0, "robot": 0, "total": 0},
+      "buff": {"god": 16, "prison": 0, "hospital": 0}
+    },
+    {
+      "index": 1,
+      "name": "S",
+      "fund": 9000,
+      "credit": 200,
+      "location": 35,
+      "prop": {"bomb": 0, "barrier": 0, "robot": 0, "total": 0},
+      "buff": {"god": 17, "prison": 0, "hospital": 0}
+    }
+  ],
+  "houses": {},
+  "placed_prop": {"bomb": [], "barrier": []},
+  "game": {"now_player": 0, "next_player": 1, "ended": false, "winner": -1},
+  "god": {"spawn_cooldown": 2, "location": -1, "duration": 0}
+}
