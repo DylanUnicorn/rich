@@ -123,28 +123,36 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
         if(currentPlayer != NULL && currentPlayer->bankruptcy == true){
             printf("%s 已破产，跳过该玩家回合。\n", player_getName(currentPlayer->character));
             
+            playerManager_nextPlayer(&playerManager);
+            if(currentPlayer->god_bless_days == 0 && currentPlayer->god == true){
+                currentPlayer->god = false;
+                printf("财神附体效果结束。\n");
+            } 
+            if(currentPlayer->god_bless_days > 0 && currentPlayer->god == true){
+                printf("财神附体效果剩余 %d 回合。\n", currentPlayer->god_bless_days);
+                currentPlayer->god_bless_days--;
+            }
             if (playerManager.currentPlayerIndex == 0) {
                 round_count++;
                 // 财神冷却机制
                 if (g_god_location == -1 && g_god_spawn_cooldown > 0) {
                     g_god_spawn_cooldown--;
-                    printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", g_god_spawn_cooldown);
+                    printf("\n[DEBUG] 财神冷却中，剩余 %d 回合\n", g_god_spawn_cooldown);
                 }
                 game_handle_turn(&g_god_location, &g_god_turn, &god_used, &g_god_spawn_cooldown, map, &playerManager);
                 printf("当前到达 %d 回合\n", round_count);
             }
-            playerManager_nextPlayer(&playerManager);
             goto next_turn;
         }
         if (currentPlayer == NULL) break;
-        if(currentPlayer->god_bless_days == 0 && currentPlayer->god == true){
-            currentPlayer->god = false;
-            printf("财神附体效果结束。\n");
-        } 
-        if(currentPlayer->god_bless_days > 0 && currentPlayer->god == true){
-            printf("财神附体效果剩余 %d 回合。\n", currentPlayer->god_bless_days);
-            currentPlayer->god_bless_days--;
-        }
+        // if(currentPlayer->god_bless_days == 0 && currentPlayer->god == true){
+        //     currentPlayer->god = false;
+        //     printf("财神附体效果结束。\n");
+        // } 
+        // if(currentPlayer->god_bless_days > 0 && currentPlayer->god == true){
+        //     printf("财神附体效果剩余 %d 回合。\n", currentPlayer->god_bless_days);
+        //     currentPlayer->god_bless_days--;
+        // }
         if (!is_test_mode) {
             print_map(map, &playerManager);
             ui_display_prompt(currentPlayer);
@@ -234,12 +242,20 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                         }
                         currentPlayer->position = (currentPlayer->position + i) % 70;
                         playerManager_nextPlayer(&playerManager); // 轮到下一个玩家
-                        if (playerManager.currentPlayerIndex == 0) {
+                        if(currentPlayer->god_bless_days == 0 && currentPlayer->god == true){
+                            currentPlayer->god = false;
+                            printf("财神附体效果结束。\n");
+                        } 
+                        if(currentPlayer->god_bless_days > 0 && currentPlayer->god == true){
+                            printf("财神附体效果剩余 %d 回合。\n", currentPlayer->god_bless_days);
+                            currentPlayer->god_bless_days--;
+                        }
+            if (playerManager.currentPlayerIndex == 0) {
                             round_count++;
                             // 财神冷却机制
                             if (g_god_location == -1 && g_god_spawn_cooldown > 0) {
                                 g_god_spawn_cooldown--;
-                                printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", g_god_spawn_cooldown);
+                                printf("\n[DEBUG] 财神冷却中，剩余 %d 回合\n", g_god_spawn_cooldown);
                             }
                             game_handle_turn(&g_god_location, &g_god_turn, &god_used, &g_god_spawn_cooldown, map, &playerManager);
                             printf("当前到达 %d 回合\n", round_count);
@@ -255,6 +271,10 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     if(map[j].type == 'F'){
                         printf("你遇见了天降财神，你太幸运啦！\n");
                         map[j].type = '0'; // Consume bomb
+                        god_used = true;
+                        g_god_location = -1;
+                        currentPlayer->god = true;
+                        currentPlayer->god_bless_days = 5;
                         break;
                     }
                 }
@@ -326,12 +346,20 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                 }
                 if (!turn_advanced) {
                     playerManager_nextPlayer(&playerManager);
-                    if (playerManager.currentPlayerIndex == 0) {
+                if(currentPlayer->god_bless_days == 0 && currentPlayer->god == true){
+                    currentPlayer->god = false;
+                    printf("财神附体效果结束。\n");
+                } 
+                if(currentPlayer->god_bless_days > 0 && currentPlayer->god == true){
+                    printf("财神附体效果剩余 %d 回合。\n", currentPlayer->god_bless_days);
+                    currentPlayer->god_bless_days--;
+                }
+            if (playerManager.currentPlayerIndex == 0) {
                         round_count++;
                         // 财神冷却机制
                         if (g_god_location == -1 && g_god_spawn_cooldown > 0) {
                             g_god_spawn_cooldown--;
-                            printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", g_god_spawn_cooldown);
+                            printf("\n[DEBUG] 财神冷却中，剩余 %d 回合\n", g_god_spawn_cooldown);
                         }
                         game_handle_turn(&g_god_location, &g_god_turn, &god_used, &g_god_spawn_cooldown, map, &playerManager);
                         printf("当前到达 %d 回合\n", round_count);
@@ -507,12 +535,20 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     }
                     currentPlayer->position = nextPos;
                     playerManager_nextPlayer(&playerManager);
-                    if (playerManager.currentPlayerIndex == 0) {
+                    if(currentPlayer->god_bless_days == 0 && currentPlayer->god == true){
+                        currentPlayer->god = false;
+                        printf("财神附体效果结束。\n");
+                    } 
+                    if(currentPlayer->god_bless_days > 0 && currentPlayer->god == true){
+                        printf("财神附体效果剩余 %d 回合。\n", currentPlayer->god_bless_days);
+                        currentPlayer->god_bless_days--;
+                    }
+            if (playerManager.currentPlayerIndex == 0) {
                         round_count++;
                         // 财神冷却机制
                         if (g_god_location == -1 && g_god_spawn_cooldown > 0) {
                             g_god_spawn_cooldown--;
-                            printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", g_god_spawn_cooldown);
+                            printf("\n[DEBUG] 财神冷却中，剩余 %d 回合\n", g_god_spawn_cooldown);
                         }
                         game_handle_turn(&g_god_location, &g_god_turn, &god_used, &g_god_spawn_cooldown, map, &playerManager);
                         printf("当前到达 %d 回合\n", round_count);
@@ -526,6 +562,10 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
                     if(map[j].type == 'F'){
                         printf("你遇见了天降财神，你太幸运啦！\n");
                         map[j].type = '0'; // Consume bomb
+                        god_used = true;
+                        g_god_location = -1;
+                        currentPlayer->god = true;
+                        currentPlayer->god_bless_days = 5;
                         break;
                     }
                 }
@@ -556,7 +596,7 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
             // }
             else if(map[i].owner == currentPlayer){
                 printf("此处为你拥有的地产，可以升级或出售。\n");
-                printf("是否升级或出售此地？(u 升级 / s 出售 / n 不操作): ");
+                printf("是否升级或出售此地？(u 升级 / n 不操作): ");
                 char choice_buf[MAX_INPUT];
                 if (fgets(choice_buf, sizeof(choice_buf), stdin) == NULL) break;
                 char choice = choice_buf[0];
@@ -594,12 +634,21 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
             }
             
             playerManager_nextPlayer(&playerManager);
+            
+            if(currentPlayer->god_bless_days == 0 && currentPlayer->god == true){
+                currentPlayer->god = false;
+                printf("财神附体效果结束。\n");
+            } 
+            if(currentPlayer->god_bless_days > 0 && currentPlayer->god == true){
+                printf("财神附体效果剩余 %d 回合。\n", currentPlayer->god_bless_days);
+                currentPlayer->god_bless_days--;
+            }
             if (playerManager.currentPlayerIndex == 0) {
                 round_count++;
                 // 财神冷却机制
                 if (g_god_location == -1 && g_god_spawn_cooldown > 0) {
                     g_god_spawn_cooldown--;
-                    printf("[DEBUG] 财神冷却中，剩余 %d 回合\n", g_god_spawn_cooldown);
+                    printf("\n[DEBUG] 财神冷却中，剩余 %d 回合\n", g_god_spawn_cooldown);
                 }
                 game_handle_turn(&g_god_location, &g_god_turn, &god_used, &g_god_spawn_cooldown, map, &playerManager);
                 printf("当前到达 %d 回合\n", round_count);

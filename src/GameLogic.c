@@ -86,31 +86,29 @@ void god_refresh(Structure* map, PlayerManager* pm, int* god_pos, int* god_turn,
     *god_pos = new_god_pos;
     map[find_place(map, *god_pos)].tool = 1;
     map[find_place(map, *god_pos)].type = 'F'; // 'F'表示财神位置
-    printf("财神已出现，位置 %d ！[DEBUG] tool已设为1\n", *god_pos);
+    printf("财神已出现，位置 %d ！\n", *god_pos);
     *game_turns = 0;
     *god_turn = 5; // remaining rounds
-    *god_used = 0;
+    *god_used = false;
 }
 
 void game_handle_turn(int* god_pos, int* god_turn, bool* god_used, int* game_turns, Structure* map, PlayerManager* playermanager) {
-    printf("[DEBUG] god_turn(remain)=%d, god_pos=%d, god_used=%d, game_turns=%d\n", *god_turn, *god_pos, *god_used, *game_turns);
+    //printf("[DEBUG] god_turn(remain)=%d, god_pos=%d, god_used=%d, game_turns=%d\n", *god_turn, *god_pos, *god_used, *game_turns);
     if(!*god_used && *god_pos != -1 ){
         if (*god_turn > 0) {
             (*god_turn)--; // count down remaining duration
-            printf("[DEBUG] 财神未被使用，剩余回合--，当前remain=%d\n", *god_turn);
+            printf("[DEBUG] 财神未被使用，剩余回合=%d\n", *god_turn);
         }
         if (*god_turn == 0){
             god_disappear(map, god_pos, god_turn);
             *game_turns = (rand() % 10) + 1; // 消失后进入冷却
             printf("[DEBUG] 财神消失，冷却开始，冷却回合：%d\n", *game_turns);
         }
-    } else if(*god_used){
-        printf("[DEBUG] 财神被使用，重置god_used并消失\n");
-        *god_used = false;
+    } else if(*god_used){//财神被使用
+        printf("[DEBUG] 财神被使用\n");
+        // *god_used = false;
         *god_turn = 0;
         god_disappear(map, god_pos, god_turn);
-        *game_turns = (rand() % 10) + 1; // 使用后进入冷却
-        printf("[DEBUG] 财神被使用，冷却开始，冷却回合：%d\n", *game_turns);
     }
 
     // 冷却为0且未有财神时才刷新
