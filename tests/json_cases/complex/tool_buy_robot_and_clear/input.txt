@@ -1,0 +1,6 @@
+step 1
+2
+f
+robot
+step 10
+dump

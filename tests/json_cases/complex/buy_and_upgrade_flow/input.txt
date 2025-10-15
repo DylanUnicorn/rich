@@ -1,0 +1,7 @@
+step 1
+step 0
+u
+step 1
+step 0
+u
+dump

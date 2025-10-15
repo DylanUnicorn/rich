@@ -174,10 +174,13 @@ void run_game_loop(int is_test_mode, const char* case_dir) {
         }
         if (!is_test_mode) ui_clear_screen();
         
-        input[strcspn(input, "\n")] = 0;
+    input[strcspn(input, "\n")] = 0;
+    /* 兼容 Windows 风格换行，移除可能存在的 '\r'，避免命令匹配失败导致多一次回合循环 */
+    size_t __in_len = strlen(input);
+    if (__in_len > 0 && input[__in_len - 1] == '\r') input[__in_len - 1] = '\0';
 
-        char *cmd = strtok(input, " ");
-        char *param = strtok(NULL, " ");
+    char *cmd = strtok(input, " \t");
+    char *param = strtok(NULL, " \t");
 
         if (cmd == NULL || strlen(cmd) == 0) continue;
         
@@ -794,10 +797,12 @@ static void write_dump_json(const char* case_dir, Structure* map, PlayerManager*
     /* god block (global) */
     fputs("  \"god\": {\n", f);
     fprintf(f, "    \"spawn_cooldown\": %d,\n", g_god_spawn_cooldown);
-    fprintf(f, "    \"location\": %d,\n", g_god_location);
-    /* duration: remaining turns (g_god_turn) if god exists; else 0 */
-    int god_duration = (g_god_location != -1) ? g_god_turn : 0;
-    fprintf(f, "    \"duration\": %d\n", god_duration);
+    /* 保证导出自洽：当剩余回合<=0 时，强制 location=-1 且 duration=0 */
+    int god_has_time = (g_god_turn > 0) && (g_god_location != -1);
+    int god_location_out = god_has_time ? g_god_location : -1;
+    int god_duration_out = god_has_time ? g_god_turn : 0;
+    fprintf(f, "    \"location\": %d,\n", god_location_out);
+    fprintf(f, "    \"duration\": %d\n", god_duration_out);
     fputs("  }\n", f);
 
     fputs("}\n", f);

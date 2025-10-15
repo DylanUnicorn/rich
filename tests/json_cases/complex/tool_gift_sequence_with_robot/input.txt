@@ -1,0 +1,8 @@
+step 1
+f
+step 7
+f
+block 3
+block 4
+robot
+dump

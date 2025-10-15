@@ -1,0 +1,6 @@
+{
+  "god": {
+    "spawn_cooldown_between": [0, 10],
+    "location_not_in": [0, 14, 28, 35, 49, 63, 64, 65, 66, 67, 68, 69]
+  }
+}
