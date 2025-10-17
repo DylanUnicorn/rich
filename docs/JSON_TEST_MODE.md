@@ -10,6 +10,8 @@
 - input.txt：命令序列（step、block、bomb、robot、dump、quit）
 - expected_result.json：期望 dump.json（断言目标）
 
+说明：自 2025-10 起，测试用例中不再包含 constraints.json 或 expected.json，统一仅保留 expected_result.json。
+
 ## 关键约定
 
 1. ended/winner 一律由 PlayerManager 的真实逻辑推导。忽略 preset.json 中的 ended/winner 字段，保证跨实现的一致性。
@@ -42,9 +44,11 @@
 
 ## 断言策略
 
-- runner.py 会解析 dump.json 与 expected_result.json，逐键比对，并生成按模块（movement/props/houses/buffs/victory/_root）统计的通过率。
+- runner.py 会解析 dump.json 与 expected_result.json，采用“子集比较”：expected_result.json 必须是 dump.json 的子集，允许 dump.json 含有更多字段（例如新增的 god 顶层块）。
+- 该策略可使旧用例在新增字段时保持稳定；若某字段值不稳定（例如与随机或冷却相关），建议不要在 expected_result.json 中包含该字段。
 
 ## 常见问题
 
 - 为什么我的 expected 里机器人没消耗？从 2025-09 起，测试模式与实际规则对齐：使用 block/bomb/robot 都会消耗库存，请更新期望。
 - preset 里 ended/winner 没生效？为了跨实现可移植，dump 的这两个字段一律从 PlayerManager 推导。
+ - 为什么没有 constraints.json 了？用例收敛到固定期望文件 expected_result.json；若存在不稳定字段，请直接从期望中省略该字段以利用子集比较特性。

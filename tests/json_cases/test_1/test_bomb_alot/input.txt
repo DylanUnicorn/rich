@@ -1,0 +1,50 @@
+bomb -5
+bomb -4
+bomb -3
+bomb -2
+bomb -1
+bomb 1
+bomb 2
+bomb 3
+bomb 4
+bomb 5
+step 0
+n
+bomb -10
+bomb -9
+bomb -8
+bomb -7
+bomb -6
+bomb 6
+bomb 7
+bomb 8
+bomb 9
+bomb 10
+step 0
+n
+
+block -5
+block -4
+block -3
+block -2
+block -1
+block 1
+block 2
+block 3
+block 4
+block 5
+step 0
+n
+block -10
+block -9
+block -8
+block -7
+block -6
+block 6
+block 7
+block 8
+block 9
+block 10
+step 0
+n
+dump

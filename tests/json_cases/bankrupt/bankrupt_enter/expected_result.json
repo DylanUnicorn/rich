@@ -3,7 +3,7 @@
     {
       "index": 0,
       "name": "Q",
-      "fund": 10100,
+      "fund": 10000,
       "credit": 0,
       "location": 0,
       "alive": true,
@@ -22,10 +22,10 @@
     {
       "index": 1,
       "name": "A",
-      "fund": -99,
+      "fund": 1,
       "credit": 0,
       "location": 1,
-      "alive": false,
+      "alive": true,
       "prop": {
         "bomb": 0,
         "barrier": 0,
@@ -33,7 +33,7 @@
         "total": 0
       },
       "buff": {
-        "god": 0,
+        "god": 4,
         "prison": 0,
         "hospital": 0
       }

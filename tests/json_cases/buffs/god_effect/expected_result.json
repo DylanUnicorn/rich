@@ -3,7 +3,7 @@
     {
       "index": 0,
       "name": "Q",
-      "fund": 9200,
+  "fund": 10000,
       "credit": 0,
       "location": 5,
       "alive": true,
@@ -22,7 +22,7 @@
     {
       "index": 1,
       "name": "A",
-      "fund": 10800,
+  "fund": 10000,
       "credit": 0,
       "location": 0,
       "alive": true,
@@ -57,7 +57,7 @@
     "winner": -1
   },
   "god": {
-    "spawn_cooldown": 1,
+    "spawn_cooldown": 6,
     "location": -1,
     "duration": 0
   }

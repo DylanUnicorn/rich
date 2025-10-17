@@ -1,0 +1,11 @@
+10000
+1234
+step 15
+n
+step 30
+n
+step 45
+n
+step 60
+n
+dump

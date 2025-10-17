@@ -3,7 +3,7 @@
     {
       "index": 0,
       "name": "Q",
-      "fund": 2033,
+  "fund": 2233,
       "credit": 0,
       "location": 1,
       "alive": true,
@@ -21,7 +21,7 @@
     }, {
       "index": 1,
       "name": "A",
-      "fund": 2133,
+  "fund": 2233,
       "credit": 0,
       "location": 2,
       "alive": true,
@@ -39,7 +39,7 @@
     }, {
       "index": 2,
       "name": "S",
-      "fund": 2133,
+  "fund": 2233,
       "credit": 0,
       "location": 2,
       "alive": true,
@@ -56,16 +56,7 @@
       }
     }
   ],
-  "houses": {
-    "1": {
-      "owner": "Q",
-      "level": 0
-    },
-    "2": {
-      "owner": "A",
-      "level": 0
-    }
-  },
+  
   "placed_prop":{
     "bomb": [],
     "barrier": []

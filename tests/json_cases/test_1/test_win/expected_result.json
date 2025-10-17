@@ -1,0 +1,37 @@
+{
+  "players": [
+    {
+      "index": 0,
+      "name": "Q",
+      "location": 0,
+      "alive": true
+    }, {
+      "index": 1,
+      "name": "A",
+      "location": 1,
+      "alive": false
+    }, {
+      "index": 2,
+      "name": "S",
+      "alive": false
+    }, {
+      "index": 3,
+      "name": "J",
+      "alive": false
+    }
+  ],
+  "houses": {
+    "1": {
+      "owner": "Q",
+      "level": 0
+    }
+  },
+  "placed_prop":{
+    "bomb": [],
+    "barrier": []
+  },
+  "game": {
+    "ended": true,
+    "winner": 0
+  }
+}

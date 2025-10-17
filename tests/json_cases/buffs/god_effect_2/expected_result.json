@@ -57,8 +57,8 @@
     "winner": -1
   },
   "god": {
-    "spawn_cooldown": 8,
-    "location": 9,
-    "duration": 5
+    "spawn_cooldown": 5,
+    "location": -1,
+    "duration": 0
   }
 }

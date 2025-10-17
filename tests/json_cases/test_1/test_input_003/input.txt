@@ -1,0 +1,50 @@
+    BomB -5
+BomB      -4
+BomB -3    
+BomB -2    
+BomB -1 
+BoMB 1
+BomB 2
+Bomb   3
+BomB 4
+BoMb  5
+step 0
+n
+BomB -10
+Bomb    -9
+BomB -8
+BomB    -7
+BOmB -6
+BomB 6
+BomB 7
+bomB 8
+BomB 9
+BomB 10
+step 0
+n
+
+  Block -5
+  BlOck -4
+Block    -3
+Block -2
+Block -1
+blOck   1
+BlocK 2
+Block   3
+  Block 4
+BLock 5
+step 0
+n
+  Block -10
+Block   -9
+Block   -8
+  Block -7
+Block     -6
+Block 6
+Block   7
+Block   8
+Block 9
+Block 10
+step 0
+n
+dump

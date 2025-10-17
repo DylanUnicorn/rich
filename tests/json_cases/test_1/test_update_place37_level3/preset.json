@@ -1,0 +1,101 @@
+{
+  "players": [
+    {
+      "index": 0,
+      "name": "Q",
+      "fund": 10000,
+      "credit": 0,
+      "location": 0,
+      "alive": true,
+      "prop": {
+        "bomb": 0,
+        "barrier": 0,
+        "robot": 0,
+        "total": 0
+      },
+      "buff": {
+        "god": 0,
+        "prison": 0,
+        "hospital": 0
+      }
+    },
+    {
+      "index": 1,
+      "name": "A",
+      "fund": 10000,
+      "credit": 0,
+      "location": 0,
+      "alive": true,
+      "prop": {
+        "bomb": 0,
+        "barrier": 0,
+        "robot": 0,
+        "total": 0
+      },
+      "buff": {
+        "god": 0,
+        "prison": 0,
+        "hospital": 0
+      }
+    },
+    {
+      "index": 2,
+      "name": "S",
+      "fund": 10000,
+      "credit": 0,
+      "location": 0,
+      "alive": true,
+      "prop": {
+        "bomb": 0,
+        "barrier": 0,
+        "robot": 0,
+        "total": 0
+      },
+      "buff": {
+        "god": 0,
+        "prison": 0,
+        "hospital": 0
+      }
+    },
+    {
+      "index": 3,
+      "name": "J",
+      "fund": 10000,
+      "credit": 0,
+      "location": 0,
+      "alive": true,
+      "prop": {
+        "bomb": 0,
+        "barrier": 0,
+        "robot": 0,
+        "total": 0
+      },
+      "buff": {
+        "god": 0,
+        "prison": 0,
+        "hospital": 0
+      }
+    }
+  ],
+  "houses": {
+    "37": {
+      "level": 3,
+      "owner": "Q"
+    }
+  },
+  "placed_prop": {
+    "bomb": [],
+    "barrier": []
+  },
+  "game": {
+    "now_player": 0,
+    "next_player": 1,
+    "ended": false,
+    "winner": -1
+  },
+  "god": {
+    "location": -1,
+    "spawn_cooldown": 10,
+    "duration": 0
+  }
+}
